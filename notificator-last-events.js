@@ -14,44 +14,9 @@
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 module.exports = function (RED) {
-    function eventLog(inPayload, outPayload, config, _agent, _motivation, _ipext, _modcom) {
-        var os = require('os');
-        var ifaces = os.networkInterfaces();
-        var uri = "http://192.168.1.43/RsyslogAPI/rsyslog.php";
-
-        var pidlocal = RED.settings.APPID;
-        var iplocal = null;
-        Object.keys(ifaces).forEach(function (ifname) {
-            ifaces[ifname].forEach(function (iface) {
-                if ('IPv4' !== iface.family || iface.internal !== false) {
-                    // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-                    return;
-                }
-                iplocal = iface.address;
-            });
-        });
-        iplocal = iplocal + ":" + RED.settings.uiPort;
-        var timestamp = new Date().getTime();
-        var modcom = _modcom;
-        var ipext = _ipext;
-        var payloadsize = JSON.stringify(outPayload).length / 1000;
-        var agent = _agent;
-        var motivation = _motivation;
-        var lang = (inPayload.lang ? inPayload.lang : config.lang);
-        var lat = (inPayload.lat ? inPayload.lat : config.lat);
-        var lon = (inPayload.lon ? inPayload.lon : config.lon);
-        var serviceuri = (inPayload.serviceuri ? inPayload.serviceuri : config.serviceuri);
-        var message = (inPayload.message ? inPayload.message : config.message);
-        var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-        var xmlHttp = new XMLHttpRequest();
-        console.log(encodeURI(uri + "?p=log" + "&pid=" + pidlocal + "&tmstmp=" + timestamp + "&modCom=" + modcom + "&IP_local=" + iplocal + "&IP_ext=" + ipext +
-            "&payloadSize=" + payloadsize + "&agent=" + agent + "&motivation=" + motivation + "&lang=" + lang + "&lat=" + (typeof lat != "undefined" ? lat : 0.0) + "&lon=" + (typeof lon != "undefined" ? lon : 0.0) + "&serviceUri=" + serviceuri + "&message=" + message));
-        xmlHttp.open("GET", encodeURI(uri + "?p=log" + "&pid=" + pidlocal + "&tmstmp=" + timestamp + "&modCom=" + modcom + "&IP_local=" + iplocal + "&IP_ext=" + ipext +
-            "&payloadSize=" + payloadsize + "&agent=" + agent + "&motivation=" + motivation + "&lang=" + lang + "&lat=" + (typeof lat != "undefined" ? lat : 0.0) + "&lon=" + (typeof lon != "undefined" ? lon : 0.0) + "&serviceUri=" + serviceuri + "&message=" + message), true); // false for synchronous request
-        xmlHttp.send(null);
-    }
-
+    
     function NotificatorLastEvents(config) {
+        var s4cUtility = require("./snap4city-utility.js");
         RED.nodes.createNode(this, config);
         var node = this;
         var uri = "http://notificator.km4city.org/notificator/restInterfaceExternal.php?operation=getEvents";
@@ -59,7 +24,7 @@ module.exports = function (RED) {
         var widget = config.widget;
         var event = config.event;
         var checkevery = config.checkevery;
-        var uid = RED.settings.APPID;
+        var uid = s4cUtility.retrieveAppID(RED);
         var inPayload = {};
         var msg = {};
         var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -84,7 +49,7 @@ module.exports = function (RED) {
                         } else {
                             msg.payload = JSON.parse("{\"status\": \"There was some problem\"}");
                         }
-                        eventLog(inPayload, msg, config, "Node-Red", "Notificator", uri, "RX");
+                        s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "Notificator", uri, "RX");
                         node.send(msg);
                     } else {
                         console.error(xmlHttp.statusText);
@@ -97,14 +62,14 @@ module.exports = function (RED) {
             xmlHttp.send(null);
         }, checkevery * 1000);
 
-        node.nodeClosingDone = function () {
-            console.log(node.getNow() + " - notificator-last-events node " + node.name + " has been closed");
+        node.closedDoneCallback = function () {
+            util.log("notificator-last-events node " + node.name + " has been closed");
         };
 
-        node.on('close', function (removed, nodeClosingDone) {
+        node.on('close', function (removed, closedDoneCallback) {
             if (removed) {
                 // Cancellazione nodo
-                console.log(node.getNow() + " - notificator-last-events node " + node.name + " is being removed from flow");
+                util.log("notificator-last-events node " + node.name + " is being removed from flow");
                 console.log(node.interval);
                 if (node.interval != null) {
                     console.log("Cancello Intervallo");
@@ -112,14 +77,14 @@ module.exports = function (RED) {
                 }
             } else {
                 // Riavvio nodo
-                console.log(node.getNow() + " - notificator-last-events node " + node.name + " is being rebooted");
+                util.log("notificator-last-events node " + node.name + " is being rebooted");
                 console.log(node.interval);
                 if (node.interval != null) {
                     console.log("Cancello Intervallo");
                     clearInterval(node.interval);
                 }
             }
-            nodeClosingDone();
+            closedDoneCallback();
 
         });
     }

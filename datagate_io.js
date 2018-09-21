@@ -36,43 +36,6 @@ var assert = require('assert');
 module.exports = function (RED) {
   "use strict";
 
-  function eventLog(inPayload, outPayload, config, _agent, _motivation, _ipext, _modcom) {
-    var os = require('os');
-    var ifaces = os.networkInterfaces();
-    var uri = "http://192.168.1.43/RsyslogAPI/rsyslog.php";
-
-    var pidlocal = RED.settings.APPID;
-    var iplocal = null;
-    Object.keys(ifaces).forEach(function (ifname) {
-      ifaces[ifname].forEach(function (iface) {
-        if ('IPv4' !== iface.family || iface.internal !== false) {
-          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-          return;
-        }
-        iplocal = iface.address;
-      });
-    });
-    iplocal = iplocal + ":" + RED.settings.uiPort;
-    var timestamp = new Date().getTime();
-    var modcom = _modcom;
-    var ipext = _ipext;
-    var payloadsize = JSON.stringify(outPayload).length / 1000;
-    var agent = _agent;
-    var motivation = _motivation;
-    var lang = (inPayload.lang ? inPayload.lang : config.lang);
-    var lat = (inPayload.lat ? inPayload.lat : config.lat);
-    var lon = (inPayload.lon ? inPayload.lon : config.lon);
-    var serviceuri = (inPayload.serviceuri ? inPayload.serviceuri : config.serviceuri);
-    var message = (inPayload.message ? inPayload.message : config.message);
-    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-    var xmlHttp = new XMLHttpRequest();
-    console.log(encodeURI(uri + "?p=log" + "&pid=" + pidlocal + "&tmstmp=" + timestamp + "&modCom=" + modcom + "&IP_local=" + iplocal + "&IP_ext=" + ipext +
-      "&payloadSize=" + payloadsize + "&agent=" + agent + "&motivation=" + motivation + "&lang=" + lang + "&lat=" + (typeof lat != "undefined" ? lat : 0.0) + "&lon=" + (typeof lon != "undefined" ? lon : 0.0) + "&serviceUri=" + serviceuri + "&message=" + message));
-    xmlHttp.open("GET", encodeURI(uri + "?p=log" + "&pid=" + pidlocal + "&tmstmp=" + timestamp + "&modCom=" + modcom + "&IP_local=" + iplocal + "&IP_ext=" + ipext +
-      "&payloadSize=" + payloadsize + "&agent=" + agent + "&motivation=" + motivation + "&lang=" + lang + "&lat=" + (typeof lat != "undefined" ? lat : 0.0) + "&lon=" + (typeof lon != "undefined" ? lon : 0.0) + "&serviceUri=" + serviceuri + "&message=" + message), true); // false for synchronous request
-    xmlHttp.send(null);
-  }
-
   var TIMESERIES_API = "/api/3/action/datastore_ts";
   var DATASTORE_API = "/api/3/action/datastore";
 
@@ -94,7 +57,7 @@ module.exports = function (RED) {
 
   function DatagateSearchNode(n) {
     validateNode(n);
-
+    var s4cUtility = require("./snap4city-utility.js");
     RED.nodes.createNode(this, n);
     var node = this;
 
@@ -191,7 +154,7 @@ module.exports = function (RED) {
         try {
           var res = JSON.parse(res);
           assert(res.success);
-          eventLog({}, {
+          s4cUtility.eventLog(RED,{}, {
             payload: res
           }, {}, "Node-Red", "Datagate", endpoint, "RX");
           node.send({
@@ -218,7 +181,7 @@ module.exports = function (RED) {
 
   function DatagateInsertNode(n) {
     validateNode(n);
-
+    var s4cUtility = require("./snap4city-utility.js");
     RED.nodes.createNode(this, n);
     var node = this;
 
@@ -253,7 +216,7 @@ module.exports = function (RED) {
         try {
           var res = JSON.parse(res);
           assert(res.success);
-          eventLog({}, payload, n, "Node-Red", "Datagate", endpoint, "TX");
+          s4cUtility.eventLog({}, payload, n, "Node-Red", "Datagate", endpoint, "TX");
           node.status({
             fill: "green",
             shape: "dot",

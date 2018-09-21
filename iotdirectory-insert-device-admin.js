@@ -68,21 +68,6 @@ module.exports = function (RED) {
 
     RED.nodes.registerType("device-registration-admin", deviceregistrationadmin);
 
-    /* RED.httpAdmin.post("/ckants_create/:id", RED.auth.needsPermission("ckants.query"), function(req,res) {
-      var node = RED.nodes.getNode(req.params.id);
-      if (node != null) {
-        try {
-            node.receive();
-            res.sendStatus(200);
-        } catch(err) {
-            res.sendStatus(500);
-            node.error(RED._("ckants.failed",{error:err.toString()}));
-        }
-      } else {
-          res.sendStatus(404);
-      }
-    }); */
-
     RED.httpAdmin.get('/s4c/js/*', function (req, res) {
         var options = {
             root: __dirname + '/lib/js/',
@@ -102,46 +87,11 @@ module.exports = function (RED) {
     });
 
 
-    RED.httpAdmin.get("/deviceregistration/:id", function (req, res) {
-        //res.json({"refreshToken": retrieveAccessToken()});
-        res.json({
-            "accessToken": retrieveAccessToken()
+    RED.httpAdmin.get("/deviceregistration/:id", RED.auth.needsPermission('device-registration-admin.read'), function (req, res) {
+        var s4cUtility = require("./snap4city-utility.js");
+            res.json({
+                "accessToken": s4cUtility.retrieveAccessToken(RED, node, node.id, null),
         });
     });
-
-    function retrieveAccessToken() {
-        console.log("here");
-        var fs = require('fs');
-        var refreshToken = fs.readFileSync('/data/refresh_token', 'utf-8');
-        console.log("refresh_token is");
-        console.log(refreshToken);
-        var url = "https://www.snap4city.org/auth/realms/master/protocol/openid-connect/token/";
-        var params = "client_id=nodered&client_secret=943106ae-c62c-4961-85a2-849f6955d404&grant_type=refresh_token&scope=openid profile&refresh_token=" + refreshToken;
-        var response = "";
-        var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-        var xmlHttp = new XMLHttpRequest();
-        console.log(encodeURI(url));
-        xmlHttp.open("POST", encodeURI(url), false);
-        xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        xmlHttp.send(params);
-        if (xmlHttp.responseText != "") {
-            try {
-                console.log("xmlHttp.responseText");
-                console.log(xmlHttp.responseText);
-                response = JSON.parse(xmlHttp.responseText);
-            } catch (e) {}
-        }
-        if (response != "") {
-            fs.writeFileSync('/data/refresh_token', response.refresh_token);
-            console.log("response.refresh_token is:");
-            console.log(response.refresh_token);
-            console.log("response.access_token is:");
-            console.log(response.access_token);
-            return response.access_token;
-            //return response.refresh_token;
-        }
-        console.log("response is:" + response);
-        return response;
-    }
 
 }

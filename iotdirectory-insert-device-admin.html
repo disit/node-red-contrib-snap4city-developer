@@ -244,9 +244,17 @@
 
             addonChangeListener_a('');
 
-
-
-
+            $.ajax({
+                url: "s4c/js/leaflet.js",
+                async: false,
+                dataType: "script"
+            });
+            $.ajax({
+                url: "s4c/js/leaflet.draw.js",
+                async: false,
+                dataType: "script"
+            });
+            node = this;
             map = L.map('node-input-map').setView([43.78, 11.23], 9);
             L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -1239,15 +1247,13 @@
     <div>
         <p id="node-input-k-label-normal" style="font-size:12px; color:#808080">
             <i class="fa"></i>These keys have been generated automatically for your device. Keep track of them. Details on
-            <a style="font-size:12px; align-left: "
-                href="https://www.snap4city.org/drupal/node/76">info</a>
+            <a style="font-size:12px; align-left: " href="https://www.snap4city.org/drupal/node/76">info</a>
         </p>
     </div>
     <div>
         <p id="node-input-k-label-sigfox" style="font-size:12px; color:#808080">
             <i class="fa"></i>Generate in your SigFox server the keys and report them here. Details on
-            <a style="font-size:12px; align-left: "
-                href="https://www.snap4city.org/drupal/node/76">info</a>
+            <a style="font-size:12px; align-left: " href="https://www.snap4city.org/drupal/node/76">info</a>
         </p>
     </div>
 

@@ -1,14 +1,18 @@
 {
     "name": "node-red-contrib-snap4city-developer",
-    "version": "0.0.1",
+    "version": "0.0.6",
     "description": "",
     "dependencies": {
         "xmlhttprequest": "^1.8.0",
         "sockjs": "^0.3.19",
         "express": "^4.16.2",
         "httpclient": "^0.1.0",
-        "mysql": "^2.15.0"
+        "mysql": "^2.15.0",
+		"sha.js": "^2.4.10"
     },
+    "keywords": [ "node-red", "smartcity", "iot" ],
+    "license": "AGPL-3.0-or-later",
+    "homepage": "https://github.com/disit/node-red-contrib-snap4city-developer",
     "node-red": {
         "nodes": {
             "service-search": "service-search.js",
@@ -80,7 +84,7 @@
             "datagate_auth": "datagate_auth.js",
             "mapping": "mapping.js",
             "set-mapping": "set-mapping.js",
-            "iotdirectory-insert-device-admin": "iotdirectory-insert-device-admin.js"
+			"snap4city-authentication": "snap4city-authentication.js"
         }
     }
 }
