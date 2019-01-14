@@ -1,16 +1,21 @@
 {
     "name": "node-red-contrib-snap4city-developer",
-    "version": "0.0.6",
-    "description": "",
+    "version": "0.0.9",
     "dependencies": {
-        "xmlhttprequest": "^1.8.0",
-        "sockjs": "^0.3.19",
         "express": "^4.16.2",
+        "form-data": "^2.3.3",
         "httpclient": "^0.1.0",
         "mysql": "^2.15.0",
-		"sha.js": "^2.4.10"
+        "request": "^2.88.0",
+        "sha.js": "^2.4.10",
+        "sockjs": "^0.3.19",
+        "xmlhttprequest": "^1.8.0"
     },
-    "keywords": [ "node-red", "smartcity", "iot" ],
+    "keywords": [
+        "node-red",
+        "smartcity",
+        "iot"
+    ],
     "license": "AGPL-3.0-or-later",
     "homepage": "https://github.com/disit/node-red-contrib-snap4city-developer",
     "node-red": {
@@ -72,7 +77,6 @@
             "resume-jobs": "resume-jobs.js",
             "resume-trigger": "resume-trigger.js",
             "resume-triggers": "resume-triggers.js",
-            "notificator-last-events": "notificator-last-events.js",
             "notificator-history-events": "notificator-history-events.js",
             "descriptive-statistics": "descriptive-statistics.js",
             "trend-plot": "trend-plot.js",
@@ -84,7 +88,8 @@
             "datagate_auth": "datagate_auth.js",
             "mapping": "mapping.js",
             "set-mapping": "set-mapping.js",
-			"snap4city-authentication": "snap4city-authentication.js"
+            "plumber-data-analytic": "plumber-data-analytic.js",
+            "snap4city-authentication-dev": "snap4city-authentication.js"
         }
     }
 }

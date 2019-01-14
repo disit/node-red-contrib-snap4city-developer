@@ -1,0 +1,278 @@
+<!--/* NODE-RED-CONTRIB-SNAP4CITY-DEVELOPER
+   Copyright (C) 2018 DISIT Lab http://www.disit.org - University of Florence
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */-->
+<script type="text/javascript">
+    RED.nodes.registerType('plumber-data-analytic', {
+        category: 'S4CDataAnalytic',
+        color: '#C7E9C0',
+        defaults: {
+            name: {
+                value: "",
+                required: false
+            },
+            baseurl: {
+                value: "",
+                required: false
+            },
+            relativeurl: {
+                value: "",
+                required: false
+            },
+            authentication: {
+                type: "snap4city-authentication-dev",
+                required: false
+            },
+            scriptrname: {
+                value: ""
+            }
+        },
+        outputs: 1,
+        inputs: 1,
+        icon: "white-globe.png",
+        label: function () {
+            return this.name || "plumber-data-analytic";
+        },
+        oneditprepare: function () {
+            $.ajax({
+                url: "isThereLocalRefreshToken/",
+                type: "GET",
+                async: false,
+                success: function (resp) {
+                    if (resp.result) {
+                        $("#rowAuthentication").hide();
+                        $("#tipAuthentication").hide();
+                    } else {
+                        $.ajax({
+                            url: "setChangedUser/",
+                            async: false,
+                            type: "POST",
+                            dataType: "json",
+                            data: {
+                                "changedUser": "false"
+                            }
+                        });
+                        $.ajax({
+                            url: "retrieveAccessTokenAuthentication",
+                            type: "GET",
+                            async: false,
+                            success: function (_data) {
+                                if (_data.accessToken == "") {
+                                    $("#inputNameContainer").hide();
+                                    $("#inputScriptRFileContainer").hide();
+                                    $("#inputRelativeUrlContainer").hide();
+                                    $("#buttonPlumberCreateContainer").hide();
+                                    $('#tipAuthenticationWrong').show();
+                                    $('#tipAuthentication').hide();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+
+
+
+            function saveFile(file) {
+                if (file != null & file != "") {
+                    var filename = file.name;
+                    $("#node-input-scriptrname").val(filename);
+                    $("#plumber-input-scriptrname").text(filename);
+                }
+            }
+            $("#node-input-scriptrfile").change(function () {
+                saveFile(this.files[0]);
+            });
+
+            function clearNameData() {
+                $("#plumber-input-scriptrname").text("");
+            }
+
+            /*  $("#node-input-button-scriptr-clear").click(function () {
+                 clearNameData();
+             }); */
+
+            function createPlumberContainer() {
+                if ($("#node-input-name").val() != "") {
+                    var accessToken = "";
+                    var appId = "";
+                    $.ajax({
+                        url: "setChangedUser/",
+                        async: false,
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            "changedUser": "false"
+                        }
+                    });
+                    $.ajax({
+                        url: "retrieveAccessTokenAuthentication",
+                        type: "GET",
+                        async: false,
+                        success: function (_data) {
+                            if (_data.accessToken != "") {
+                                accessToken = _data.accessToken;
+                                appId = _data.appId;
+                            };
+
+                        }
+                    });
+                    if (accessToken != "") {
+                        var formData = new FormData();
+                        formData.append("R_file", $("#node-input-scriptrfile")[0].files[0]);
+                        $("#node-dialog-ok").hide();
+                        $.ajax({
+                            url: encodeURI(
+                                "https://www.snap4city.org/snap4city-application-api/v1/?op=new_plumber&name=" +
+                                $("#node-input-name").val() + "&id=pl" + RED.nodes.id().replace(
+                                    ".",
+                                    "") + "&iotappid=" + appId + "&accessToken=" + accessToken),
+                            data: formData,
+                            type: 'POST',
+                            contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                            processData: false, // NEEDED, DON'T OMIT THIS
+                            success: function (_data) {
+                                console.log(JSON.parse(_data));
+                                data = JSON.parse(_data);
+                                if (data != null && data.url != null) {
+                                    $("#node-input-baseurl").val(data.url);
+                                    $("#node-input-name").attr("disabled", true);
+                                    $("#node-input-scriptrfile").attr("disabled", true);
+                                    $("#node-input-create-plumber-container").attr("disabled",
+                                        true);
+                                    $("#node-dialog-ok").show();
+                                    alert(
+                                        "Successfully Created!\n Sending a JSON in input with parameters\ needed by the R Script"
+                                    );
+                                } else {
+                                    alert(data.error);
+                                }
+
+                            },
+                            error: function (_error) {
+                                alert(_error.error);
+                            }
+                        });
+                    }
+                } else {
+                    alert("You must insert the name");
+                }
+            };
+
+            $("#node-input-create-plumber-container").on("click", function () {
+                createPlumberContainer();
+            });
+
+            if (this.baseurl != "") {
+                $("#node-input-name").attr("disabled", true);
+                $("#node-input-scriptrfile").attr("disabled", true);
+                $("#node-input-create-plumber-container").attr("disabled", true);
+            }
+
+            $("#plumber-input-scriptrname").text(this.scriptrname);
+        },
+        oneditresize: function () {
+            $.ajax({
+                url: "isThereLocalRefreshToken/",
+                type: "GET",
+                async: false,
+                success: function (resp) {
+                    if (!resp.result) {
+                        if ($("#node-input-authentication").children().length > 1) {
+                            $("#node-input-authentication option[value='_ADD_']").remove();
+                        }
+                        $.ajax({
+                            url: "getChangedUser/",
+                            type: "GET",
+                            async: false,
+                            success: function (resp) {
+                                if (resp.changedUser == "true") {
+                                    $("#tipAuthentication").hide();
+                                    $("#tipAuthenticationWrong").hide();
+                                    $("#tipAuthenticationRedeploy").show();
+                                    $("#inputNameContainer").hide();
+                                    $("#inputScriptRFileContainer").hide();
+                                    $("#inputRelativeUrlContainer").hide();
+                                    $("#buttonPlumberCreateContainer").hide();
+                                }
+                            },
+                            error: function (err) {
+                                if (err.status == 404) {
+                                    $("#tipAuthentication").show();
+                                    $("#tipAuthenticationDeployFirstTime").show();
+                                    $("#tipAuthenticationWrong").hide();
+                                    $("#tipAuthenticationRedeploy").hide();
+                                    $("#inputNameContainer").hide();
+                                    $("#inputScriptRFileContainer").hide();
+                                    $("#inputRelativeUrlContainer").hide();
+                                    $("#buttonPlumberCreateContainer").hide();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="plumber-data-analytic">
+    <div class="form-row" id="rowAuthentication">
+        <label for="node-input-authentication">Authentication</label>
+        <input type="text" id="node-input-authentication">
+    </div>
+    <div class="form-tips"  id="tipAuthentication" style="max-width: none">
+            You must have an account with Snap4city to use this node. You can register for one <a href="https://www.snap4city.org" target="_blank">here</a>.
+        </div>
+        <div class="form-tips" id="tipAuthenticationWrong" style="display:none; max-width: none">
+            Maybe the authentication data are wrong. Check them and redeploy the node.
+        </div>
+        <div class="form-tips"  id="tipAuthenticationRedeploy" style="display:none; max-width: none">
+            Deploy the node to access the other configuration fields.
+        </div>
+        <div class="form-tips"  id="tipAuthenticationDeployFirstTime" style="display:none; max-width: none">
+            Insert the authentication data and deploy the node to access the other configuration fields.
+        </div>
+    <div class="form-row" id ="inputNameContainer">
+            <label for="node-input-name">Name</label>
+            <input type="text" autocomplete="off" id="node-input-name" placeholder="Name">
+        </div>
+    <div class="form-row" id ="inputRelativeUrlContainer">
+        <label for="node-input-relativeurl">Relative Uri</label>
+        <input type="text" autocomplete="off" id="node-input-relativeurl" placeholder="/relativeUri">
+    </div>
+    <div class="form-row" id="inputScriptRFileContainer">
+        <label style="width: 120px;"><i class="fa fa-file-text-o"></i> Script R</label>
+        <span>
+            <label class="editor-button" for="node-input-scriptrfile"><i class="fa fa-upload"></i> Upload</label>
+            <input class="hide" type="file" id="node-input-scriptrfile">
+            <span id="plumber-input-scriptrname" style="width: calc(100% - 280px); overflow: hidden; line-height:34px; height:34px; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle;"> </span>
+            <!-- <button class="editor-button editor-button-small" id="node-input-button-scriptr-clear" style="margin-left: 10px"><i class="fa fa-times"></i></button>
+         --></span>
+    </div>
+    <div class="form-row" id="buttonPlumberCreateContainer">
+        <button class="editor-button" id="node-input-create-plumber-container" style="margin-left: 10px">Create Plumber Data Analytic</button>
+    </div>
+   
+    <input type="hidden" id="node-input-baseurl">
+    <input type="hidden" id="node-input-scriptrname">
+</script>
+
+<script type="text/x-red" data-help-name="plumber-data-analytic">
+    <h3>Details</h3>
+    <p>The node can receive a JSON with the parameters described in the Inputs section and with them generate the output JSON.
+        If the values are not present in the input JSON, these are read by those in the configuration. If they are not present
+        in either part, an error is generated for the necessary parameters.</p>
+
+</script>
