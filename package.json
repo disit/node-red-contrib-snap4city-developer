@@ -89,7 +89,7 @@
             "mapping": "mapping.js",
             "set-mapping": "set-mapping.js",
             "plumber-data-analytic": "plumber-data-analytic.js",
-            "snap4city-authentication-dev": "snap4city-authentication.js"
+            "snap4city-authentication-dev": "snap4city-authentication-dev.js"
         }
     }
 }

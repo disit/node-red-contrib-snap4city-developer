@@ -64,7 +64,7 @@
                             }
                         });
                         $.ajax({
-                            url: "retrieveAccessTokenAuthentication",
+                            url: "retrieveAccessTokenAuthenticationDev",
                             type: "GET",
                             async: false,
                             success: function (_data) {
@@ -108,24 +108,44 @@
                     var accessToken = "";
                     var appId = "";
                     $.ajax({
-                        url: "setChangedUser/",
-                        async: false,
-                        type: "POST",
-                        dataType: "json",
-                        data: {
-                            "changedUser": "false"
-                        }
-                    });
-                    $.ajax({
-                        url: "retrieveAccessTokenAuthentication",
+                        url: "isThereLocalRefreshToken/",
                         type: "GET",
                         async: false,
-                        success: function (_data) {
-                            if (_data.accessToken != "") {
-                                accessToken = _data.accessToken;
-                                appId = _data.appId;
-                            };
-
+                        success: function (resp) {
+                            if (resp.result) {
+                                $.ajax({
+                                    url: "getAccessToken",
+                                    type: "GET",
+                                    async: false,
+                                    success: function (_data) {
+                                        if (_data.accessToken != "") {
+                                            accessToken = _data.accessToken;
+                                            appId = _data.appId;
+                                        };
+                                    }
+                                });
+                            } else {
+                                $.ajax({
+                                    url: "setChangedUser/",
+                                    async: false,
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: {
+                                        "changedUser": "false"
+                                    }
+                                });
+                                $.ajax({
+                                    url: "retrieveAccessTokenAuthenticationDev",
+                                    type: "GET",
+                                    async: false,
+                                    success: function (_data) {
+                                        if (_data.accessToken != "") {
+                                            accessToken = _data.accessToken;
+                                            appId = _data.appId;
+                                        };
+                                    }
+                                });
+                            }
                         }
                     });
                     if (accessToken != "") {

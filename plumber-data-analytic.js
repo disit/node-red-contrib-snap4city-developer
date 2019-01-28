@@ -27,6 +27,7 @@ module.exports = function (RED) {
                 stringParameters = stringParameters + parameter + "=" + msg.payload[parameter] + "&";
             }
             var uri = node.baseUrl + node.relativeUrl;
+            var inPayload = msg.payload;
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
             console.log(encodeURI(uri + "?" + stringParameters));
