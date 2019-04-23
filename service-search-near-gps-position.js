@@ -21,11 +21,11 @@ module.exports = function (RED) {
         var node = this;
         var msgs = [{}, {}, {}];
         node.on('input', function (msg) {
-            var uri = "https://servicemap.km4city.org/WebAppGrafo/api/v1/";
+            var uri = "https://www.disit.org/superservicemap/api/v1/";
             var latitude = (msg.payload.latitude ? msg.payload.latitude : config.latitude);
             var longitude = (msg.payload.longitude ? msg.payload.longitude : config.longitude);
             var categories = (msg.payload.categories ? msg.payload.categories : config.categories);
-            var maxDists = (msg.payload.maxdists ? msg.payload.maxdists : config.maxdists);
+            var maxDists = (msg.payload.maxdistance ? msg.payload.maxdistance : config.maxdists);
             var maxResults = (msg.payload.maxresults ? msg.payload.maxresults : config.maxresults);
             var language = (msg.payload.lang ? msg.payload.lang : config.lang);
             var geometry = (msg.payload.geometry ? msg.payload.geometry : config.geometry);

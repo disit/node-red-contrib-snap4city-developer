@@ -21,7 +21,7 @@ module.exports = function (RED) {
         var node = this;
         var msgs = [{}, {}, {}];
         node.on('input', function (msg) {
-            var uri = "https://servicemap.km4city.org/WebAppGrafo/api/v1/";
+            var uri = "https://www.disit.org/superservicemap/api/v1/";
             var latitudebottomleft = (msg.payload.latitudebottomleft ? msg.payload.latitudebottomleft : config.latitudebottomleft);
             var longitudebottomleft = (msg.payload.longitudebottomleft ? msg.payload.longitudebottomleft : config.longitudebottomleft);
             var latitudetopright = (msg.payload.latitudetopright ? msg.payload.latitudetopright : config.latitudetopright);

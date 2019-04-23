@@ -42,7 +42,7 @@ module.exports = function (RED) {
             }
             s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "Mapping", uri, "RX");
 
-            uri = "https://servicemap.km4city.org/WebAppGrafo/api/v1/";
+            uri = "https://www.disit.org/superservicemap/api/v1/";
             console.log(encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
             xmlHttp.open("GET", encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), false); // false for synchronous request
             xmlHttp.send(null);

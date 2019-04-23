@@ -20,12 +20,12 @@ module.exports = function (RED) {
         RED.nodes.createNode(this, config);
         var node = this;
         node.on('input', function (msg) {
-            var uri = "https://servicemap.km4city.org/WebAppGrafo/api/v1/location/";
+            var uri = "https://www.disit.org/superservicemap/api/v1/location/";
             var search = (msg.payload.search ? msg.payload.search : config.search);
             var searchMode = (msg.payload.searchmode ? msg.payload.searchmode : config.searchmode);
             var latitude = (msg.payload.latitude ? msg.payload.latitude : config.latitude);
             var longitude = (msg.payload.longitude ? msg.payload.longitude : config.longitude);
-            var maxDists = (msg.payload.maxdists ? msg.payload.maxdists : config.maxdists);
+            var maxDists = (msg.payload.maxdistance ? msg.payload.maxdistance : config.maxdists);
             var maxResults = (msg.payload.maxresults ? msg.payload.maxresults : config.maxresults);
             var excludePoi = (msg.payload.excludepoi ? msg.payload.excludepoi : config.excludepoi);
             var uid = s4cUtility.retrieveAppID(RED);
