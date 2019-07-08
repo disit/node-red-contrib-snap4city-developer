@@ -17,6 +17,8 @@ module.exports = function (RED) {
 
     function PlumberDataAnalytic(config) {
         var s4cUtility = require("./snap4city-utility.js");
+        var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+        var xmlHttp = new XMLHttpRequest();
         RED.nodes.createNode(this, config);
         var node = this;
         node.baseUrl = config.baseurl;
@@ -28,8 +30,8 @@ module.exports = function (RED) {
             }
             var uri = node.baseUrl + node.relativeUrl;
             var inPayload = msg.payload;
-            var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-            var xmlHttp = new XMLHttpRequest();
+            
+            
             console.log(encodeURI(uri + "?" + stringParameters));
             xmlHttp.open("GET", encodeURI(uri + "?" + stringParameters), true); // false for synchronous request
             xmlHttp.onload = function (e) {
@@ -48,8 +50,8 @@ module.exports = function (RED) {
                         node.send(msg);
                     } else {
                         console.error(xmlHttp.statusText);
-                        
-                        if (xmlHttp.status == 502){
+
+                        if (xmlHttp.status == 502) {
                             node.error("Something went wrong. Check the correctness of the R script. Also the plumber's annotation.");
                         } else {
                             node.error(xmlHttp.responseText);
@@ -63,6 +65,43 @@ module.exports = function (RED) {
             };
             xmlHttp.send(null);
 
+        });
+
+        node.on('close', function (removed, done) {
+            var util = require('util');
+            var s4cUtility = require("./snap4city-utility.js");
+            if (removed) {
+                // Cancellazione nodo
+                util.log("plumber-data-analytic node " + node.name + " is being removed from flow");
+                var accessToken = "";
+                var uri = "https://www.snap4city.org/snap4city-application-api/v1/";
+                var uid = s4cUtility.retrieveAppID(RED);
+                accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
+                if (accessToken != "" && typeof accessToken != "undefined") {
+                    util.log(encodeURI(uri + "?op=rm_app&id=" + node.baseUrl.replace("https://iot-app.snap4city.org/plumber/", "") + "&accessToken=" + accessToken));
+                    xmlHttp.open("GET", encodeURI(uri + "?op=rm_app&id=" + node.baseUrl.replace("https://iot-app.snap4city.org/plumber/", "") + "&accessToken=" + accessToken), true);
+                    xmlHttp.onload = function (e) {
+                        if (xmlHttp.readyState === 4) {
+                            if (xmlHttp.status === 200) {
+                                util.log(xmlHttp.responseText);
+                                util.log("plumber-data-analytic app is deleted");
+                            }
+                        } else {
+                            util.log("plumber-data-analytic app is NOT deleted (not 200), status: " + xmlHttp.status);
+                        }
+                        done();
+                    }
+                };
+                xmlHttp.onerror = function (e) {
+                    util.log("plumber-data-analytic app is NOT deleted (inside ERROR)");
+                    done();
+                };
+                xmlHttp.send(null);
+            } else {
+                // Riavvio nodo
+                util.log("plumber-data-analytic node " + node.name + " is being rebooted");
+                done();
+            }
         });
     }
     RED.nodes.registerType("plumber-data-analytic", PlumberDataAnalytic);
