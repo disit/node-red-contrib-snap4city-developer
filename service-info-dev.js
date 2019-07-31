@@ -27,13 +27,14 @@ module.exports = function (RED) {
             }
             var lang = (msg.payload.lang ? msg.payload.lang : config.lang);
             var fromtime = (msg.payload.fromtime ? msg.payload.fromtime : config.fromtime);
+            var totime = (msg.payload.totime ? msg.payload.totime : config.totime);
             var uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            console.log(encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
+            console.log(encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
             if (typeof serviceuri != "undefined" && serviceuri != "") {
-                xmlHttp.open("GET", encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), true); // false for synchronous request
+                xmlHttp.open("GET", encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), true); // false for synchronous request
                 xmlHttp.onload = function (e) {
                     if (xmlHttp.readyState === 4) {
                         if (xmlHttp.status === 200) {

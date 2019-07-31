@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */-->
 <script type="text/javascript">
     RED.nodes.registerType('service-info-dev', {
-        category: 'S4CSearchDev',
+        category: 'S4CUtility',
         color: '#E9967A',
         defaults: {
             name: {
@@ -30,6 +30,10 @@
                 required: false
             },
             fromtime: {
+                value: "",
+                required: false
+            },
+            totime: {
                 value: "",
                 required: false
             }
@@ -54,7 +58,11 @@
     </div>
     <div class="form-row">
         <label for="node-input-fromtime">fromTime</label>
-        <input type="text" autocomplete="off" id="node-input-fromtime" placeholder="n-day, n-hour, n-minute or yyyyy-mm-ddThhh:mm:ss">
+        <input type="text" autocomplete="off" id="node-input-fromtime" placeholder="n-day, n-hour, n-minute or yyyy-mm-ddThhh:mm:ss">
+    </div>
+    <div class="form-row">
+        <label for="node-input-totime">toTime</label>
+        <input type="text" autocomplete="off" id="node-input-totime" placeholder="yyyy-mm-ddThhh:mm:ss">
     </div>
     <div class="form-row">
         <label for="node-input-lang">Language</label>
@@ -83,8 +91,11 @@
         <dt>fromtime
             <span class="property-type">string</span>
         </dt>
-        <dd> fromtime, date/time from when retrieve realtime data. The string format can be: n-day, n-hour, n-minute or yyyyy-mm-ddThhh:
-            mm: ss </dd>
+        <dd> fromtime, date/time from when retrieve realtime data. The string format can be: n-day, n-hour, n-minute or yyyy-mm-ddThh:mm:ss </dd>
+        <dt>totime
+            <span class="property-type">string</span>
+        </dt>
+            <dd> totime, date/time to when retrieve realtime data. The string format can be: yyyy-mm-ddThh:mm:ss </dd>
         <dt>lang
             <span class="property-type">string</span>
         </dt>
