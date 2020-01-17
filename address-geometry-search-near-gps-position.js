@@ -26,10 +26,15 @@ module.exports = function (RED) {
             var intersectGeometry = (msg.payload.intersectgeometry ? msg.payload.intersectgeometry : config.intersectgeometry);
             var uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
+            var accessToken = "";
+            accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
             console.log(encodeURI(uri + "?position=" + latitude + ";" + longitude + "&intersectGeom=" + intersectGeometry + "&format=json" + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
             xmlHttp.open("GET", encodeURI(uri + "?position=" + latitude + ";" + longitude + "&intersectGeom=" + intersectGeometry + "&format=json" + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), true); // false for synchronous request
+            if (typeof accessToken != "undefined" && accessToken != "") {
+                xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+            }
             xmlHttp.onload = function (e) {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
@@ -45,12 +50,14 @@ module.exports = function (RED) {
                         s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "ASCAPI", uri, "RX");
                         node.send(msg);
                     } else {
-                        console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                        console.error(xmlHttp.statusText);
+                        node.error(xmlHttp.responseText);
                     }
                 }
             };
             xmlHttp.onerror = function (e) {
-                console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                console.error(xmlHttp.statusText);
+                node.error(xmlHttp.responseText);
             };
             xmlHttp.send(null);
         });

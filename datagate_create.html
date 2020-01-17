@@ -13,59 +13,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-
-<script type="text/x-red" data-help-name="datagate create">
-  <p>This node creates a new DATAGATE Datastore resource. It allows to specify the resource schema to be stored (i.e the fields
-    of the data, like latitude, longitude of coordinate data).</p>
-
-  <p>It also supports creating timeseries resources using DATAGATE Timeseries API, a new extension that allows DATAGATE to work
-    with timeseries data. More at
-    <a href="https://github.com/namgk/ckan-timeseries">DATAGATE Timeseries Github</a>
-  </p>
-
-  <p>
-    <b>Note: Timeseries API will not be able to work with resources created by original Datastore API</b>
-  </p>
-
-</script>
-
-<script type="text/x-red" data-template-name="datagate create">
-  <div class="form-row">
-    <label for="node-input-auth">
-      <i class="fa"></i> DATAGATE Auth:</label>
-    <input type="text" autocomplete="off" id="node-input-auth">
-  </div>
-
-  <div class="form-row">
-    <label for="node-input-name">
-      <i class="fa"></i> Resource Name:</label>
-    <input type="text" autocomplete="off" id="node-input-name">
-  </div>
-
-  <!--   <div class="form-row">
-  <label for="node-input-description"><i class="fa"></i> Description</label>
-  <input type="text" autocomplete="off" id="node-input-description">
-  </div> -->
-
-  <div class="form-row">
-    <label for="node-input-packageId">
-      <i class="fa"></i> Dataset Id:</label>
-    <input type="text" autocomplete="off" id="node-input-packageId">
-  </div>
-
-  <div class="form-row">
-    <label>Timeseries?</label>
-    <input type="checkbox" id="node-input-timeseries" style="display: inline-block; width: auto; vertical-align: top;">
-  </div>
-
-  <div class="form-row node-input-field-container-row">
-    <label for="node-input-field-container" style="width: 100%;">
-      <i class="fa"></i> Fields: choose the field type and specify its name.</label>
-    <ol id="node-input-field-container"></ol>
-  </div>
-</script>
-
-
 <script type="text/javascript">
   var color = "#f2f2f2";
 
@@ -228,4 +175,55 @@
       }
     }
   });
+</script>
+
+<script type="text/x-red" data-template-name="datagate create">
+  <div class="form-row">
+    <label for="node-input-auth">
+      <i class="fa"></i> DATAGATE Auth:</label>
+    <input type="text" autocomplete="off" id="node-input-auth">
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-name">
+      <i class="fa"></i> Resource Name:</label>
+    <input type="text" autocomplete="off" id="node-input-name">
+  </div>
+
+  <!--   <div class="form-row">
+  <label for="node-input-description"><i class="fa"></i> Description</label>
+  <input type="text" autocomplete="off" id="node-input-description">
+  </div> -->
+
+  <div class="form-row">
+    <label for="node-input-packageId">
+      <i class="fa"></i> Dataset Id:</label>
+    <input type="text" autocomplete="off" id="node-input-packageId">
+  </div>
+
+  <div class="form-row">
+    <label>Timeseries?</label>
+    <input type="checkbox" id="node-input-timeseries" style="display: inline-block; width: auto; vertical-align: top;">
+  </div>
+
+  <div class="form-row node-input-field-container-row">
+    <label for="node-input-field-container" style="width: 100%;">
+      <i class="fa"></i> Fields: choose the field type and specify its name.</label>
+    <ol id="node-input-field-container"></ol>
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="datagate create">
+  <p>This node creates a new DATAGATE Datastore resource. It allows to specify the resource schema to be stored (i.e the fields
+    of the data, like latitude, longitude of coordinate data).</p>
+
+  <p>It also supports creating timeseries resources using DATAGATE Timeseries API, a new extension that allows DATAGATE to work
+    with timeseries data. More at
+    <a href="https://github.com/namgk/ckan-timeseries">DATAGATE Timeseries Github</a>
+  </p>
+
+  <p>
+    <b>Note: Timeseries API will not be able to work with resources created by original Datastore API</b>
+  </p>
+
 </script>

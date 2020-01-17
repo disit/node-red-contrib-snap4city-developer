@@ -29,10 +29,15 @@ module.exports = function (RED) {
             var uid = s4cUtility.retrieveAppID(RED);
             var inPayload = {};
             var msg = {};
+            var accessToken = "";
+            accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
             console.log(encodeURI(uri + "&startDate=" + startdate + "&endDate=" + enddate + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget + "&appID=iotapp"));
-            xmlHttp.open("GET", encodeURI(uri + "&startDate=" + startdate + "&endDate=" + enddate + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget + "&appID=iotapp"), true); // false for synchronous request
+            xmlHttp.open("GET", encodeURI(uri + "&startDate=" + startdate + "&endDate=" + enddate + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget   + "&appID=iotapp"), true); // false for synchronous request
+            if (typeof accessToken != "undefined" && accessToken != "") {
+                xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+            }
             xmlHttp.onload = function (e) {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {

@@ -15,31 +15,23 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 module.exports = function (RED) {
 
-    function ServiceInfoDev(config) {
+    function IotAppUpgrade(config) {
         var s4cUtility = require("./snap4city-utility.js");
+        var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+        var xmlHttp = new XMLHttpRequest();
         RED.nodes.createNode(this, config);
         var node = this;
+
         node.on('input', function (msg) {
-            var uri = "https://www.disit.org/superservicemap/api/v1/";
-            var serviceuri = (msg.payload.serviceuri ? msg.payload.serviceuri : config.serviceuri);
-            if (typeof serviceuri == "undefined" || (typeof serviceuri != "undefined" && serviceuri == "" && msg.payload.indexOf("://") != -1)) {
-                serviceuri = msg.payload;
-            }
-            var lang = (msg.payload.lang ? msg.payload.lang : config.lang);
-            var fromtime = (msg.payload.fromtime ? msg.payload.fromtime : config.fromtime);
-            var totime = (msg.payload.totime ? msg.payload.totime : config.totime);
-            var uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
             var accessToken = "";
+            var idIOTApp = (msg.payload.id ? msg.payload.id : config.idIOTApp);
+            var uri = "https://www.snap4city.org/snap4city-application-api/v1/";
+            var uid = s4cUtility.retrieveAppID(RED);
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
-            var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-            var xmlHttp = new XMLHttpRequest();
-            console.log(encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
-            if (typeof serviceuri != "undefined" && serviceuri != "") {
-                xmlHttp.open("GET", encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "")  + "&appID=iotapp"), true); // false for synchronous request
-                if (typeof accessToken != "undefined" && accessToken != "") {
-                    xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
-                }
+            if (accessToken != "" && typeof accessToken != "undefined") {
+                console.log(encodeURI(uri + "?op=upgrade_app&id=" + idIOTApp));
+                xmlHttp.open("GET", encodeURI(uri + "?op=upgrade_app&id=" + idIOTApp + "&accessToken=" + accessToken), true);
                 xmlHttp.onload = function (e) {
                     if (xmlHttp.readyState === 4) {
                         if (xmlHttp.status === 200) {
@@ -52,13 +44,13 @@ module.exports = function (RED) {
                             } else {
                                 msg.payload = JSON.parse("{\"status\": \"There was some problem\"}");
                             }
-                            s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "ASCAPI", uri, "RX");
+                            s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "IotAppUpgrade", uri, "RX");
                             node.send(msg);
                         } else {
                             console.error(xmlHttp.statusText);
                             node.error(xmlHttp.responseText);
                         }
-                    }
+                    } 
                 };
                 xmlHttp.onerror = function (e) {
                     console.error(xmlHttp.statusText);
@@ -66,9 +58,10 @@ module.exports = function (RED) {
                 };
                 xmlHttp.send(null);
             } else {
-                node.error("Empty serviceuri");
-            }
+                console.log("Problem Access Token");
+            };
         });
+
     }
-    RED.nodes.registerType("service-info-dev", ServiceInfoDev);
+    RED.nodes.registerType("iotapp-upgrade", IotAppUpgrade);
 }

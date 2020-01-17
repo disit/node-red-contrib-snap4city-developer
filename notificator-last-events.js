@@ -14,7 +14,7 @@
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 module.exports = function (RED) {
-    
+
     function NotificatorLastEvents(config) {
         var s4cUtility = require("./snap4city-utility.js");
         RED.nodes.createNode(this, config);
@@ -27,6 +27,8 @@ module.exports = function (RED) {
         var uid = s4cUtility.retrieveAppID(RED);
         var inPayload = {};
         var msg = {};
+        var accessToken = "";
+        accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
         var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
         var xmlHttp = new XMLHttpRequest();
         console.log(node.interval);
@@ -36,7 +38,10 @@ module.exports = function (RED) {
         }
         node.interval = setInterval(function () {
             console.log(encodeURI(uri + "&startDate=" + (new Date(Date.now() - new Date().getTimezoneOffset() * 1000 * 60 - checkevery * 1000)).toISOString().split('.')[0].replace("T", " ") + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget + "&appID=iotapp"));
-            xmlHttp.open("GET", encodeURI(uri + "&startDate=" + (new Date(Date.now() - new Date().getTimezoneOffset() * 1000 * 60 - checkevery * 1000)).toISOString().split('.')[0].replace("T", " ") + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget + "&appID=iotapp"), true); // false for synchronous request
+            xmlHttp.open("GET", encodeURI(uri + "&startDate=" + (new Date(Date.now() - new Date().getTimezoneOffset() * 1000 * 60 - checkevery * 1000)).toISOString().split('.')[0].replace("T", " ") + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget  + "&appID=iotapp"), true); // false for synchronous request
+            if (typeof accessToken != "undefined" && accessToken != "") {
+                xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+            }
             xmlHttp.onload = function (e) {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
@@ -52,12 +57,14 @@ module.exports = function (RED) {
                         s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "Notificator", uri, "RX");
                         node.send(msg);
                     } else {
-                        console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                        console.error(xmlHttp.statusText);
+                        node.error(xmlHttp.responseText);
                     }
                 }
             };
             xmlHttp.onerror = function (e) {
-                console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                console.error(xmlHttp.statusText);
+                node.error(xmlHttp.responseText);
             };
             xmlHttp.send(null);
         }, checkevery * 1000);

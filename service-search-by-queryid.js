@@ -28,38 +28,54 @@ module.exports = function (RED) {
             var inPayload = msg.payload;
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
+            var accessToken = "";
+            accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             console.log(encodeURI(uri + "?queryId=" + queryid + "&format=json" + "&lang=" + language + "&geometry=true&fullCount=false" + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
-            xmlHttp.open("GET", encodeURI(uri + "?queryId=" + queryid + "&format=json" + "&lang=" + language + "&geometry=true&fullCount=false" + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), true); // false for synchronous request
-            if (xmlHttp.responseText != "") {
-                var response = JSON.parse(xmlHttp.responseText);
-                var serviceUriArray = [];
-                var completeFeatures = {
-                    "Results": {
-                        "type": "FeatureCollection",
-                        "features": []
+            xmlHttp.open("GET", encodeURI(uri + "?queryId=" + queryid + "&format=json" + "&lang=" + language + "&geometry=true&fullCount=false" + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "")  + "&appID=iotapp"), true); // false for synchronous request
+            xmlHttp.onload = function (e) {
+                if (xmlHttp.readyState === 4) {
+                    if (xmlHttp.status === 200) {
+                        if (xmlHttp.responseText != "") {
+                            var response = JSON.parse(xmlHttp.responseText);
+                            var serviceUriArray = [];
+                            var completeFeatures = {
+                                "Results": {
+                                    "type": "FeatureCollection",
+                                    "features": []
+                                }
+                            }
+                            for (var category in response) {
+                                for (var i = 0; i < response[category].features.length; i++) {
+                                    serviceUriArray.push(response[category].features[i].properties.serviceUri);
+                                }
+
+                                if (response[category].features.length != 0) {
+                                    completeFeatures["Results"].features = completeFeatures["Results"].features.concat(response[category].features);
+
+                                }
+                            }
+                            msgs[0].payload = serviceUriArray;
+                            msgs[1].payload = response;
+                            msgs[2].payload = completeFeatures;
+
+                        } else {
+                            msgs[0].payload = JSON.parse("{\"status\": \"error\"}");
+                            msgs[1].payload = JSON.parse("{\"status\": \"error\"}");
+                            msgs[2].payload = JSON.parse("{\"status\": \"error\"}");
+                        }
+                        s4cUtility.eventLog(RED, inPayload, msgs, config, "Node-Red", "ASCAPI", uri, "RX");
+                        node.send(msgs);
+                    } else {
+                        console.error(xmlHttp.statusText);
+                        node.error(xmlHttp.responseText);
                     }
                 }
-                for (var category in response) {
-                    for (var i = 0; i < response[category].features.length; i++) {
-                        serviceUriArray.push(response[category].features[i].properties.serviceUri);
-                    }
-
-                    if (response[category].features.length != 0) {
-                        completeFeatures["Results"].features = completeFeatures["Results"].features.concat(response[category].features);
-
-                    }
-                }
-                msgs[0].payload = serviceUriArray;
-                msgs[1].payload = response;
-                msgs[2].payload = completeFeatures;
-
-            } else {
-                msgs[0].payload = JSON.parse("{\"status\": \"error\"}");
-                msgs[1].payload = JSON.parse("{\"status\": \"error\"}");
-                msgs[2].payload = JSON.parse("{\"status\": \"error\"}");
-            }
-            s4cUtility.eventLog(RED, inPayload, msgs, config, "Node-Red", "ASCAPI", uri, "RX");
-            node.send(msgs);
+            };
+            xmlHttp.onerror = function (e) {
+                console.error(xmlHttp.statusText);
+                node.error(xmlHttp.responseText);
+            };
+            xmlHttp.send(null);
         });
     }
     RED.nodes.registerType("service-search-by-queryid", ServiceSearchByQueryId);

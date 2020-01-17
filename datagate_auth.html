@@ -13,24 +13,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<script type="text/x-red" data-template-name="datagate-credentials">
-  <div class="form-row">
-    <label for="node-config-input-datagate">
-      <i class="fa"></i>Datagate</label>
-    <input type="text" autocomplete="off" id="node-config-input-datagate" placeholder="http://datagate.snap4city.org">
-  </div>
-  <div class="form-row">
-    <label for="node-config-input-token">
-      <i class="fa"></i>Datagate User Token</label>
-    <input type="text" autocomplete="off" id="node-config-input-token" placeholder="token from Datagate user profile">
-  </div>
-  <div class="form-row">
-    <label for="node-config-input-name">
-      <i class="fa"></i>Name</label>
-    <input type="text" autocomplete="off" id="node-config-input-name" placeholder="any name for this credential">
-  </div>
-</script>
-
 <script type="text/javascript">
   RED.nodes.registerType('datagate-credentials', {
     category: 'config',
@@ -54,4 +36,22 @@
       return this.name || "no name specified!";
     }
   });
+</script>
+
+<script type="text/x-red" data-template-name="datagate-credentials">
+  <div class="form-row">
+    <label for="node-config-input-datagate">
+      <i class="fa"></i>Datagate</label>
+    <input type="text" autocomplete="off" id="node-config-input-datagate" placeholder="http://datagate.snap4city.org">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-token">
+      <i class="fa"></i>Datagate User Token</label>
+    <input type="text" autocomplete="off" id="node-config-input-token" placeholder="token from Datagate user profile">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-name">
+      <i class="fa"></i>Name</label>
+    <input type="text" autocomplete="off" id="node-config-input-name" placeholder="any name for this credential">
+  </div>
 </script>

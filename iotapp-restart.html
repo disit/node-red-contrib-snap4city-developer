@@ -14,26 +14,15 @@
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */-->
 <script type="text/javascript">
-    RED.nodes.registerType('service-info-mapped', {
-        category: 'S4CMapping',
-        color: '#E7E7AE',
+    RED.nodes.registerType('iotapp-restart', {
+        category: 'S4CIOTApp',
+        color: '#dddddd',
         defaults: {
-            name: {
-                value: ""
-            },
             authentication: {
-                type: "snap4city-authentication",
+                type: "snap4city-authentication-dev",
                 required: false
             },
-            serviceuri: {
-                value: "",
-                required: false
-            },
-            lang: {
-                value: "",
-                required: false
-            },
-            fromtime: {
+            idIOTApp: {
                 value: "",
                 required: false
             }
@@ -58,48 +47,33 @@
         },
         outputs: 1,
         inputs: 1,
-        icon: "white-globe.png",
+        icon: " arrow-in.png",
         label: function () {
-            return this.name || "service-info-mapped";
+            return this.name || "iotapp-restart";
         }
     });
 </script>
 
-<script type="text/x-red" data-template-name="service-info-mapped">
+<script type="text/x-red" data-template-name="iotapp-restart">
     <div class="form-row" id="rowAuthentication">
         <label for="node-input-authentication">Authentication</label>
         <input type="text" id="node-input-authentication">
     </div>
-    <div class="form-tips"  id="tipAuthentication" style="margin-bottom: 10px;">
-        If you have private data and you want to access them, you must have to insert you account data. You can register for one account 
+    <div class="form-row">
+        <label for="node-input-idIOTApp">IOT App ID</label>
+        <input type="text" autocomplete="off" id="node-input-idIOTApp" placeholder="id">
+    </div>
+    <div class="form-tips"  id="tipAuthentication" style="max-width: none">
+        You must have an account with Snap4city to use this node. You can register for one
         <a href="https://www.snap4city.org"
             target="_blank">here</a>.
     </div>
-    <div class="form-row">
-        <label for="node-input-name">Name</label>
-        <input type="text" autocomplete="off" id="node-input-name" placeholder="Name">
-    </div>
-    <div class="form-row">
-        <label for="node-input-serviceuri">ServiceUri</label>
-        <input type="text" autocomplete="off" id="node-input-serviceuri" placeholder="http://">
-    </div>
-    <div class="form-row">
-        <label for="node-input-fromtime">fromTime</label>
-        <input type="text" autocomplete="off" id="node-input-fromtime" placeholder="n-day, n-hour, n-minute or yyyyy-mm-ddThhh:mm:ss">
-    </div>
-    <div class="form-row">
-        <label for="node-input-lang">Language</label>
-        <select id="node-input-lang">
-            <option value="en">English</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
-            <option value="it">Italian</option>
-            <option value="es">Spanish</option>
-        </select>
-
-    </div>
 </script>
 
-<script type="text/x-red" data-help-name="service-info-mapped">
+<script type="text/x-red" data-help-name="iotapp-restart">
+    <h3>Details</h3>
+    <p>The node can receive a JSON with the parameters described in the Inputs section and with them generate the output JSON.
+        If the values are not present in the input JSON, these are read by those in the configuration. If they are not present
+        in either part, an error is generated for the necessary parameters.</p>
 
 </script>
