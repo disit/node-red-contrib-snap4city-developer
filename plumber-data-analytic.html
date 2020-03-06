@@ -290,9 +290,11 @@
 </script>
 
 <script type="text/x-red" data-help-name="plumber-data-analytic">
-    <h3>Details</h3>
-    <p>The node can receive a JSON with the parameters described in the Inputs section and with them generate the output JSON.
-        If the values are not present in the input JSON, these are read by those in the configuration. If they are not present
-        in either part, an error is generated for the necessary parameters.</p>
-
+    In order to make the best use of this node, follow the guides: 
+    <br>
+    <a href="https://www.snap4city.org/download/video/barc19/da/">Data Analytic general interactive description</a>
+    <br>
+    <a href="https://www.snap4city.org/drupal/node/385">Detailed Description</a>
+    
+    Warning, if the script takes longer than 2 minutes to execute, a nodered timeout error may be shown even if the script is executing correctly. If the timeout occurs, nothing is returned from the nodered. Alternatives for scripts that have an execution time greater than 2 minutes are: write the results to other APIs, increase the timeout time in nodered settings (this cannot be done if you use nodered on the snap4city platform)
 </script>
