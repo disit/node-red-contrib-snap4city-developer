@@ -1,14 +1,16 @@
 {
     "name": "node-red-contrib-snap4city-developer",
-    "version": "0.1.9",
+    "version": "0.3.6",
     "dependencies": {
-        "express": "^4.16.2",
-        "form-data": "^2.3.3",
+        "express": "^4.17.1",
+        "form-data": "^3.0.0",
         "httpclient": "^0.1.0",
-        "mysql": "^2.15.0",
-        "request": "^2.88.0",
-        "sha.js": "^2.4.10",
-        "sockjs": "^0.3.19",
+        "mysql": "^2.18.1",
+        "request": "^2.88.2",
+        "sha.js": "^2.4.11",
+        "sockjs": "^0.3.20",
+        "uuid": "^8.3.0",
+        "winston": "^3.3.3",
         "xmlhttprequest": "^1.8.0"
     },
     "keywords": [
@@ -89,10 +91,21 @@
             "mapping": "mapping.js",
             "set-mapping": "set-mapping.js",
             "plumber-data-analytic": "plumber-data-analytic.js",
+            "python-data-analytic": "python-data-analytic.js",
             "snap4city-authentication-dev": "snap4city-authentication-dev.js",
             "portia-crawler": "portia-crawler.js",
             "iotapp-restart": "iotapp-restart.js",
-            "iotapp-upgrade": "iotapp-upgrade.js"
+            "iotapp-upgrade": "iotapp-upgrade.js",
+            "ownership": "ownership.js",
+            "om-get-processes": "om-get-processes.js",
+            "om-get-teams": "om-get-teams.js",
+            "om-get-components": "om-get-components.js",
+            "om-get-plants": "om-get-plants.js",
+            "om-get-status": "om-get-status.js",
+            "om-create-new-process": "om-create-new-process.js",
+            "om-advance-process": "om-advance-process.js",
+            "om-details-process": "om-details-process.js",
+            "om-delete-process": "om-delete-process.js"
         }
     }
 }

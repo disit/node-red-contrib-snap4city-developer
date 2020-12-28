@@ -16,22 +16,23 @@
 module.exports = function (RED) {
 
     function IotAppUpgrade(config) {
+                RED.nodes.createNode(this, config);
+        var node = this;
         var s4cUtility = require("./snap4city-utility.js");
+        const logger = s4cUtility.getLogger(RED, node);
         var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
         var xmlHttp = new XMLHttpRequest();
-        RED.nodes.createNode(this, config);
-        var node = this;
 
         node.on('input', function (msg) {
             var inPayload = msg.payload;
             var accessToken = "";
             var idIOTApp = (msg.payload.id ? msg.payload.id : config.idIOTApp);
-            var uri = "https://www.snap4city.org/snap4city-application-api/v1/";
-            var uid = s4cUtility.retrieveAppID(RED);
+            var uri = (RED.settings.snap4cityApplicationApiUrl ? RED.settings.snap4cityApplicationApiUrl : "https://www.snap4city.org/snap4city-application-api/v1")
+            const uid = s4cUtility.retrieveAppID(RED);
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             if (accessToken != "" && typeof accessToken != "undefined") {
-                console.log(encodeURI(uri + "?op=upgrade_app&id=" + idIOTApp));
-                xmlHttp.open("GET", encodeURI(uri + "?op=upgrade_app&id=" + idIOTApp + "&accessToken=" + accessToken), true);
+                logger.info(encodeURI(uri + "/?op=upgrade_app&id=" + idIOTApp));
+                xmlHttp.open("GET", encodeURI(uri + "/?op=upgrade_app&id=" + idIOTApp + "&accessToken=" + accessToken), true);
                 xmlHttp.onload = function (e) {
                     if (xmlHttp.readyState === 4) {
                         if (xmlHttp.status === 200) {
@@ -39,21 +40,23 @@ module.exports = function (RED) {
                                 try {
                                     msg.payload = JSON.parse(xmlHttp.responseText);
                                 } catch (e) {
+                                    logger.error("Problem Parsing data " + xmlHttp.responseText);
                                     msg.payload = xmlHttp.responseText;
                                 }
                             } else {
                                 msg.payload = JSON.parse("{\"status\": \"There was some problem\"}");
+                                logger.error("Problem Parsing data " + xmlHttp.responseText);
                             }
                             s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "IotAppUpgrade", uri, "RX");
                             node.send(msg);
                         } else {
-                            console.error(xmlHttp.statusText);
+                            logger.error(xmlHttp.statusText);
                             node.error(xmlHttp.responseText);
                         }
-                    } 
+                    }
                 };
                 xmlHttp.onerror = function (e) {
-                    console.error(xmlHttp.statusText);
+                    logger.error(xmlHttp.statusText);
                     node.error(xmlHttp.responseText);
                 };
                 xmlHttp.send(null);

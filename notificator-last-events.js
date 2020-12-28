@@ -16,15 +16,16 @@
 module.exports = function (RED) {
 
     function NotificatorLastEvents(config) {
-        var s4cUtility = require("./snap4city-utility.js");
         RED.nodes.createNode(this, config);
         var node = this;
+        var s4cUtility = require("./snap4city-utility.js");
+        const logger = s4cUtility.getLogger(RED, node);
         var uri = "http://notificator.km4city.org/notificator/restInterfaceExternal.php?operation=getEvents";
         var dashboard = config.dashboard;
         var widget = config.widget;
         var event = config.event;
         var checkevery = config.checkevery;
-        var uid = s4cUtility.retrieveAppID(RED);
+        const uid = s4cUtility.retrieveAppID(RED);
         var inPayload = {};
         var msg = {};
         var accessToken = "";
@@ -37,14 +38,17 @@ module.exports = function (RED) {
             clearInterval(node.interval);
         }
         node.interval = setInterval(function () {
-            console.log(encodeURI(uri + "&startDate=" + (new Date(Date.now() - new Date().getTimezoneOffset() * 1000 * 60 - checkevery * 1000)).toISOString().split('.')[0].replace("T", " ") + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget + "&appID=iotapp"));
-            xmlHttp.open("GET", encodeURI(uri + "&startDate=" + (new Date(Date.now() - new Date().getTimezoneOffset() * 1000 * 60 - checkevery * 1000)).toISOString().split('.')[0].replace("T", " ") + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget  + "&appID=iotapp"), true); // false for synchronous request
+            logger.info(encodeURI(uri + "&startDate=" + (new Date(Date.now() - new Date().getTimezoneOffset() * 1000 * 60 - checkevery * 1000)).toISOString().split('.')[0].replace("T", " ") + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget + "&appID=iotapp"));
+            xmlHttp.open("GET", encodeURI(uri + "&startDate=" + (new Date(Date.now() - new Date().getTimezoneOffset() * 1000 * 60 - checkevery * 1000)).toISOString().split('.')[0].replace("T", " ") + "&dashboardTitle=" + dashboard + "&widgetTitle=" + widget + "&appID=iotapp"), true); // false for synchronous request
             if (typeof accessToken != "undefined" && accessToken != "") {
                 xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+            } else {
+                logger.debug("Call without accessToken");
             }
             xmlHttp.onload = function (e) {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
+                        logger.info("ResponseText: " + xmlHttp.responseText);
                         if (xmlHttp.responseText != "") {
                             try {
                                 msg.payload = JSON.parse(xmlHttp.responseText).data;
@@ -57,13 +61,13 @@ module.exports = function (RED) {
                         s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "Notificator", uri, "RX");
                         node.send(msg);
                     } else {
-                        console.error(xmlHttp.statusText);
+                        logger.error(xmlHttp.statusText);
                         node.error(xmlHttp.responseText);
                     }
                 }
             };
             xmlHttp.onerror = function (e) {
-                console.error(xmlHttp.statusText);
+                logger.error(xmlHttp.statusText);
                 node.error(xmlHttp.responseText);
             };
             xmlHttp.send(null);

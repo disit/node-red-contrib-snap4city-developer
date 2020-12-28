@@ -16,9 +16,10 @@
 module.exports = function (RED) {
 
     function ResumeJobs(config) {
-        var s4cUtility = require("./snap4city-utility.js");
         RED.nodes.createNode(this, config);
         var node = this;
+        var s4cUtility = require("./snap4city-utility.js");
+        const logger = s4cUtility.getLogger(RED, node);
         node.on('input', function (msg) {
             var hostname = (msg.payload.hostname ? msg.payload.hostname : config.hostname);
             var uri = "https://" + hostname + ":8080/SmartCloudEngine/index.jsp";
@@ -30,11 +31,12 @@ module.exports = function (RED) {
             }
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            console.log(encodeURI(uri + "?json=" + JSON.stringify(json)));
-            xmlHttp.open("GET", encodeURI(uri + "?json=" + JSON.stringify(json)), true); // false for synchronous request
+            logger.info(encodeURI(uri + "/?json=" + JSON.stringify(json)));
+            xmlHttp.open("GET", encodeURI(uri + "/?json=" + JSON.stringify(json)), true); // false for synchronous request
             xmlHttp.onload = function (e) {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
+                        logger.info("ResponseText: " + xmlHttp.responseText);
                         if (xmlHttp.responseText != "") {
                             msg.payload = JSON.parse(xmlHttp.responseText.replace("<p>", "").replace("</p>", ""));
                         } else {
@@ -43,12 +45,14 @@ module.exports = function (RED) {
                         s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "DISCES", uri, "RX");
                         node.send(msg);
                     } else {
-                        console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                        logger.error(xmlHttp.statusText);
+                        node.error(xmlHttp.responseText);
                     }
                 }
             };
             xmlHttp.onerror = function (e) {
-                console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                logger.error(xmlHttp.statusText);
+                node.error(xmlHttp.responseText);
             };
             xmlHttp.send(null);
         });

@@ -96,8 +96,8 @@ module.exports = function (RED) {
 
     RED.httpAdmin.get("/deviceregistration/:id", RED.auth.needsPermission('device-registration-admin.read'), function (req, res) {
         var s4cUtility = require("./snap4city-utility.js");
-            res.json({
-                "accessToken": s4cUtility.retrieveAccessToken(RED, node, node.id, null),
+        res.json({
+            "accessToken": s4cUtility.retrieveAccessToken(RED, node, node.id, null),
         });
     });
 

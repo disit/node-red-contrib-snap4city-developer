@@ -62,7 +62,7 @@
                     for (var i = 0; i < dashboards.length; i++) {
                         $("<option value=\"" + dashboards[i].dashboardTitle + "\">" +
                             dashboards[i].dashboardTitle + "</option>").appendTo($(
-                            "#node-input-dashboard"));
+                                "#node-input-dashboard"));
                     }
                     $("#node-input-dashboard").val("");
                 },
@@ -86,13 +86,13 @@
                             for (var i = 0; i < widgets.length; i++) {
                                 $("<option value=\"" + widgets[i].widgetTitle + "\">" +
                                     widgets[i].widgetTitle + "</option>").appendTo(
-                                    $("#node-input-widget"));
+                                        $("#node-input-widget"));
                             }
                             $("#node-input-event").empty();
                             for (var j = 0; j < widgets[0].eventTypes.length; j++) {
                                 $("<option value=\"" + widgets[0].eventTypes[j] + "\">" +
                                     widgets[0].eventTypes[j] + "</option>").appendTo(
-                                    $("#node-input-event"));
+                                        $("#node-input-event"));
                             }
                         },
                         error: function (err) {
@@ -111,7 +111,7 @@
                             for (var j = 0; j < widgets[i].eventTypes.length; j++) {
                                 $("<option value=\"" + widgets[i].eventTypes[j] + "\">" + widgets[i]
                                     .eventTypes[j] + "</option>").appendTo($(
-                                    "#node-input-event"));
+                                        "#node-input-event"));
                             }
                             break;
                         }

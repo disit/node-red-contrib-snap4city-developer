@@ -448,9 +448,7 @@
                     for (var i=0; i<t.length; i++){
                         valuetype+= '<option value="'+t[i]+'">'+t[i]+'</option>';  
                         }
-
-
-                    console.log(valuetype);
+console.log(valuetype);
 
                     var u =data.value_unit;
                     for( var i=0; i<u.length; i++){
@@ -489,8 +487,6 @@
                     var dataType = "";
                     var valueType = "";
                     var valueUnit = "";
-
-
                     valueName = opt.value_name;
                     if (typeof valueName != "undefined") {
                         dataType = opt.type;
@@ -658,7 +654,7 @@
             console.log($("#node-input-k2").val());
 
             if ($("#node-input-name").val().length == 0 || $("#node-input-devicetype").val().length == 0 || $(
-                    "#node-input-model").val().length == 0 || $('#node-input-k1').val() == "" || $('#node-input-k2').val() ==
+                "#node-input-model").val().length == 0 || $('#node-input-k1').val() == "" || $('#node-input-k2').val() ==
                 "") {
                 $("#node-dialog-ok").css('background', '#FFFFFF').css('border-color', '#A9A9A9');
                 ischecked = false;
@@ -784,8 +780,6 @@
 
                         addAttributes_a(attributes[j]);
                     }
-
-
 
                     break;
                 }
@@ -983,8 +977,6 @@
                 success: function (resp) {
                     console.log(resp);
                     accesstoken = resp.accessToken;
-
-
                     var payload = {
                         action: "insert",
                         attributes: JSON.stringify(mynewAttributes),
@@ -1275,5 +1267,5 @@
     
   </script>
 
-  <script type=" text/javascript " src="s4c/js/leaflet.js "></script>
-  <script type="text/javascript " src="s4c/js/leaflet.draw.js "></script>
+<script type=" text/javascript " src="s4c/js/leaflet.js "></script>
+<script type="text/javascript " src="s4c/js/leaflet.draw.js "></script>

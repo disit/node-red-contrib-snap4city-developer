@@ -154,7 +154,7 @@ module.exports = function (RED) {
         try {
           var res = JSON.parse(res);
           assert(res.success);
-          s4cUtility.eventLog(RED,{}, {
+          s4cUtility.eventLog(RED, {}, {
             payload: res
           }, {}, "Node-Red", "Datagate", endpoint, "RX");
           node.send({

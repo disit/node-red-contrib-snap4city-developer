@@ -16,90 +16,119 @@
 module.exports = function (RED) {
 
     function PlumberDataAnalytic(config) {
-        var s4cUtility = require("./snap4city-utility.js");
-        var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-        var xmlHttp = new XMLHttpRequest();
         RED.nodes.createNode(this, config);
         var node = this;
+        var s4cUtility = require("./snap4city-utility.js");
+        const logger = s4cUtility.getLogger(RED, node);
+        var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+        var xmlHttp = new XMLHttpRequest();
         node.baseUrl = config.baseurl;
         node.relativeUrl = config.relativeurl;
+        node.lock = false;
         node.on('input', function (msg) {
-            var stringParameters = "";
-            for (var parameter in msg.payload) {
-                stringParameters = stringParameters + parameter + "=" + msg.payload[parameter] + "&";
-            }
-            var uri = node.baseUrl + node.relativeUrl;
-            var inPayload = msg.payload;
-            
-            
-            console.log(encodeURI(uri + "?" + stringParameters));
-            xmlHttp.open("GET", encodeURI(uri + "?" + stringParameters), true); // false for synchronous request
-            xmlHttp.onload = function (e) {
-                if (xmlHttp.readyState === 4) {
-                    if (xmlHttp.status === 200) {
-                        if (xmlHttp.responseText != "") {
-                            try {
-                                msg.payload = JSON.parse(xmlHttp.responseText);
-                            } catch (e) {
-                                msg.payload = xmlHttp.responseText;
-                            }
-                        } else {
-                            msg.payload = JSON.parse("{\"status\": \"There was some problem\"}");
-                        }
-                        s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "PlumberDataAnalytic", uri, "RX");
-                        node.send(msg);
-                    } else {
-                        console.error(xmlHttp.statusText);
+            if (!node.lock) {
+                node.lock = true;
+                node.lockTimeout = setTimeout(function () {
+                    node.lock = false
+                }, 600000);
+                var stringParameters = "";
+                for (var parameter in msg.payload) {
+                    stringParameters = stringParameters + parameter + "=" + msg.payload[parameter] + "&";
+                }
+                var uri = node.baseUrl + node.relativeUrl;
+                var inPayload = msg.payload;
 
-                        if (xmlHttp.status == 502) {
-                            node.error("Something went wrong. Check the correctness of the R script. Also the plumber's annotation.");
+
+                logger.info(encodeURI(uri + "?" + stringParameters));
+                xmlHttp.open("GET", encodeURI(uri + "?" + stringParameters), true); // false for synchronous request
+                xmlHttp.onload = function (e) {
+                    node.lock = false;
+                    clearTimeout(node.lockTimeout);
+                    msg.payload = {
+                        "request": inPayload,
+                        "response": ""
+                    }
+                    if (xmlHttp.readyState === 4) {
+                        if (xmlHttp.status === 200) {
+                            if (xmlHttp.responseText != "") {
+                                try {
+                                    msg.payload.response = JSON.parse(xmlHttp.responseText);
+                                } catch (e) {
+                                    msg.payload.response = xmlHttp.responseText;
+                                }
+                            } else {
+                                msg.payload.response = JSON.parse("{\"status\": \"There was some problem\"}");
+                            }
+                            s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "PlumberDataAnalytic", uri, "RX");
+                            node.send(msg);
                         } else {
-                            node.error(xmlHttp.responseText);
+                            logger.error(xmlHttp.statusText);
+
+                            if (xmlHttp.status == 502) {
+                                node.error("Something went wrong. Check the correctness of the R script. Also the plumber's annotation.");
+                            } else {
+                                node.error(xmlHttp.responseText);
+                            }
                         }
                     }
-                }
-            };
-            xmlHttp.onerror = function (e) {
-                console.error(xmlHttp.statusText);
-                node.error(xmlHttp.responseText);
-            };
-            xmlHttp.send(null);
-
+                    var xmlHttp2 = new XMLHttpRequest();
+                    var idIOTApp = node.baseUrl.replace("https://iot-app.snap4city.org/plumber/", "");
+                    var uri = (RED.settings.snap4cityApplicationApiUrl ? RED.settings.snap4cityApplicationApiUrl : "https://www.snap4city.org/snap4city-application-api/v1")
+                    const uid = s4cUtility.retrieveAppID(RED);
+                    var accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
+                    if (accessToken != "" && typeof accessToken != "undefined") {
+                        logger.info(encodeURI(uri + "/?op=restart_app&id=" + idIOTApp));
+                        xmlHttp2.open("GET", encodeURI(uri + "/?op=restart_app&id=" + idIOTApp + "&accessToken=" + accessToken), true);
+                        xmlHttp2.onload = function (e) {
+                            logger.debug(xmlHttp2.responseText);
+                        };
+                        xmlHttp2.onerror = function (e) {
+                            logger.error(xmlHttp2.responseText);
+                        };
+                        xmlHttp2.send(null);
+                    }
+                };
+                xmlHttp.onerror = function (e) {
+                    logger.error(xmlHttp.statusText);
+                    node.error(xmlHttp.responseText);
+                };
+                xmlHttp.send(null);
+            } else {
+                node.error("Already sent a request, wait for the answer");
+            }
         });
 
         node.on('close', function (removed, done) {
-            var util = require('util');
-            var s4cUtility = require("./snap4city-utility.js");
             if (removed) {
                 // Cancellazione nodo
-                util.log("plumber-data-analytic node " + node.name + " is being removed from flow");
+                logger.debug("is being removed from flow");
                 var accessToken = "";
-                var uri = "https://www.snap4city.org/snap4city-application-api/v1/";
-                var uid = s4cUtility.retrieveAppID(RED);
+                var uri = (RED.settings.snap4cityApplicationApiUrl ? RED.settings.snap4cityApplicationApiUrl : "https://www.snap4city.org/snap4city-application-api/v1")
+                const uid = s4cUtility.retrieveAppID(RED);
                 accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
                 if (accessToken != "" && typeof accessToken != "undefined") {
-                    util.log(encodeURI(uri + "?op=rm_app&id=" + node.baseUrl.replace("https://iot-app.snap4city.org/plumber/", "") + "&accessToken=" + accessToken));
-                    xmlHttp.open("GET", encodeURI(uri + "?op=rm_app&id=" + node.baseUrl.replace("https://iot-app.snap4city.org/plumber/", "") + "&accessToken=" + accessToken), true);
+                    logger.info(encodeURI(uri + "/?op=rm_app&id=" + node.baseUrl.replace("https://iot-app.snap4city.org/plumber/", "") + "&accessToken=" + accessToken));
+                    xmlHttp.open("GET", encodeURI(uri + "/?op=rm_app&id=" + node.baseUrl.replace("https://iot-app.snap4city.org/plumber/", "") + "&accessToken=" + accessToken), true);
                     xmlHttp.onload = function (e) {
                         if (xmlHttp.readyState === 4) {
                             if (xmlHttp.status === 200) {
-                                util.log(xmlHttp.responseText);
-                                util.log("plumber-data-analytic app is deleted");
+                                logger.info("is deleted");
+                                logger.debug(xmlHttp.responseText);
                             }
                         } else {
-                            util.log("plumber-data-analytic app is NOT deleted (not 200), status: " + xmlHttp.status);
+                           logger.error("is NOT deleted (not 200), status: " + xmlHttp.status);
                         }
                         done();
                     }
                 };
                 xmlHttp.onerror = function (e) {
-                    util.log("plumber-data-analytic app is NOT deleted (inside ERROR)");
+                    logger.error("is NOT deleted (inside ERROR)");
                     done();
                 };
                 xmlHttp.send(null);
             } else {
                 // Riavvio nodo
-                util.log("plumber-data-analytic node " + node.name + " is being rebooted");
+                logger.debug(" is being rebooted");
                 done();
             }
         });

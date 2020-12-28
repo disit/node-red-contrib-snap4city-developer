@@ -30,10 +30,11 @@ module.exports = function (RED) {
 
         node.on('input', function (msg) {
             var s4cUtility = require("./snap4city-utility.js");
-            var uid = s4cUtility.retrieveAppID(RED);
+            const logger = s4cUtility.getLogger(RED, node);
+            const uid = s4cUtility.retrieveAppID(RED);
             var project = (msg.payload.project ? msg.payload.project : config.project);
             var spider = (msg.payload.spider ? msg.payload.spider : config.spider);
-            var uri = "https://www.snap4city.org/snap4city-application-api/v1/";
+            var uri = (RED.settings.snap4cityApplicationApiUrl ? RED.settings.snap4cityApplicationApiUrl : "https://www.snap4city.org/snap4city-application-api/v1")
             var inPayload = msg.payload;
             var accessToken = "";
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
@@ -42,8 +43,8 @@ module.exports = function (RED) {
                 var xmlHttp = new XMLHttpRequest();
                 getMyUri(node).then(function (myUri) {
                     var postTo = "https://" + myUri + "/";
-                    console.log(encodeURI(uri + "?op=run_portia_crawler&project=" + project + "&spider=" + spider + "&accessToken=" + accessToken + "&postTo=" + postTo + node.id.replace(".", "")));
-                    xmlHttp.open("GET", encodeURI(uri + "?op=run_portia_crawler&project=" + project + "&spider=" + spider + "&accessToken=" + accessToken + "&postTo=" + postTo + node.id.replace(".", "")), true);
+                    logger.info(encodeURI(uri + "/?op=run_portia_crawler&project=" + project + "&spider=" + spider + "&accessToken=" + accessToken + "&postTo=" + postTo + node.id.replace(".", "")));
+                    xmlHttp.open("GET", encodeURI(uri + "/?op=run_portia_crawler&project=" + project + "&spider=" + spider + "&accessToken=" + accessToken + "&postTo=" + postTo + node.id.replace(".", "")), true);
                     xmlHttp.onload = function (e) {
                         if (xmlHttp.readyState === 4) {
                             if (xmlHttp.status === 200) {
@@ -65,8 +66,9 @@ module.exports = function (RED) {
                                         }
 
                                         RED.httpNode.post("/" + node.id.replace(".", ""), next, next, next, jsonParser, urlencParser, rawBodyParser, listenOnUrl, errorHandler);
-                                    } catch (e) {
+                                    }catch (e) {
                                         msg.payload = xmlHttp.responseText;
+                                        logger.error("Problem Parsing data " + xmlHttp.responseText);
                                     }
                                 } else {
                                     msg.payload = JSON.parse("{\"status\": \"There was some problem\"}");
@@ -74,13 +76,13 @@ module.exports = function (RED) {
                                 s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "PortiaCrawler", uri, "RX");
                                 node.send(msg);
                             } else {
-                                console.error(xmlHttp.statusText);
+                                logger.error(xmlHttp.statusText);
                                 node.error(xmlHttp.responseText);
                             }
                         }
                     };
                     xmlHttp.onerror = function (e) {
-                        console.error(xmlHttp.statusText);
+                        logger.error(xmlHttp.statusText);
                         node.error(xmlHttp.responseText);
                     };
                     try {

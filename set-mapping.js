@@ -16,19 +16,20 @@
 module.exports = function (RED) {
 
     function SetMapping(config) {
-        var s4cUtility = require("./snap4city-utility.js");
         RED.nodes.createNode(this, config);
         var node = this;
+        var s4cUtility = require("./snap4city-utility.js");
+        const logger = s4cUtility.getLogger(RED, node);
         node.on('input', function (msg) {
             var uri = "http://processloader.snap4city.org/processloader/mapping/setDestination.php";
-            var uid = s4cUtility.retrieveAppID(RED);
+            const uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
             var source = (msg.payload.source ? msg.payload.source : config.source);
             var destination = (msg.payload.destination ? msg.payload.destination : config.destination);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            console.log(encodeURI(uri + "?" + (typeof source != "undefined" && source != "" ? "&source=" + source : "") + (typeof destination != "undefined" && destination != "" ? "&destination=" + destination : "")));
-            xmlHttp.open("GET", encodeURI(uri + "?" + (typeof source != "undefined" && source != "" ? "&source=" + source : "") + (typeof destination != "undefined" && destination != "" ? "&destination=" + destination : "")), false);
+            logger.info(encodeURI(uri + "/?" + (typeof source != "undefined" && source != "" ? "&source=" + source : "") + (typeof destination != "undefined" && destination != "" ? "&destination=" + destination : "")));
+            xmlHttp.open("GET", encodeURI(uri + "/?" + (typeof source != "undefined" && source != "" ? "&source=" + source : "") + (typeof destination != "undefined" && destination != "" ? "&destination=" + destination : "")), false);
             xmlHttp.setRequestHeader("Content-Type", "application/json");
             xmlHttp.send(null);
             if (xmlHttp.responseText != "") {

@@ -16,9 +16,10 @@
 module.exports = function (RED) {
 
     function DescriptiveStatistics(config) {
-        var s4cUtility = require("./snap4city-utility.js");
         RED.nodes.createNode(this, config);
         var node = this;
+        var s4cUtility = require("./snap4city-utility.js");
+        const logger = s4cUtility.getLogger(RED, node);
         node.on('input', function (msg) {
             var hostname = (msg.payload.hostname ? msg.payload.hostname : config.hostname);
             var uri = hostname + "/descriptive";
@@ -28,11 +29,12 @@ module.exports = function (RED) {
             var inPayload = msg.payload;
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            console.log(encodeURI(uri + "?sensorTypeList=" + dataset + "&currentDate=" + currentdate + "&daysNumber=" + dayinterval));
-            xmlHttp.open("GET", encodeURI(uri + "?sensorTypeList=" + dataset + "&currentDate=" + currentdate + "&daysNumber=" + dayinterval), true); // false for synchronous request
+            logger.info(encodeURI(uri + "/?sensorTypeList=" + dataset + "&currentDate=" + currentdate + "&daysNumber=" + dayinterval));
+            xmlHttp.open("GET", encodeURI(uri + "/?sensorTypeList=" + dataset + "&currentDate=" + currentdate + "&daysNumber=" + dayinterval), true); // false for synchronous request
             xmlHttp.onload = function (e) {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
+                        logger.info("ResponseText: " + xmlHttp.responseText);
                         if (xmlHttp.responseText != "") {
                             try {
                                 xmlHttp.responseText = xmlHttp.responseText.replace(/~/g, hostname.replace("/api/", "") + "/files");
@@ -46,12 +48,14 @@ module.exports = function (RED) {
                         s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "RStatistics", uri, "RX");
                         node.send(msg);
                     } else {
-                        console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                        logger.error(xmlHttp.statusText);
+                        node.error(xmlHttp.responseText);
                     }
                 }
             };
             xmlHttp.onerror = function (e) {
-                console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                logger.error(xmlHttp.statusText);
+                node.error(xmlHttp.responseText);
             };
             xmlHttp.send(null);
         });

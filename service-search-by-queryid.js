@@ -16,27 +16,35 @@
 module.exports = function (RED) {
 
     function ServiceSearchByQueryId(config) {
-        var s4cUtility = require("./snap4city-utility.js");
         RED.nodes.createNode(this, config);
         var node = this;
+        var s4cUtility = require("./snap4city-utility.js");
+        const logger = s4cUtility.getLogger(RED, node);
         var msgs = [{}, {}, {}];
         node.on('input', function (msg) {
-            var uri = "https://www.disit.org/superservicemap/api/v1/";
+            var uri = (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://www.disit.org/superservicemap/api/v1");
             var queryid = (msg.payload.queryid ? msg.payload.queryid : config.queryid);
             var language = (msg.payload.lang ? msg.payload.lang : config.lang);
-            var uid = s4cUtility.retrieveAppID(RED);
+            const uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
             var accessToken = "";
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
-            console.log(encodeURI(uri + "?queryId=" + queryid + "&format=json" + "&lang=" + language + "&geometry=true&fullCount=false" + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
-            xmlHttp.open("GET", encodeURI(uri + "?queryId=" + queryid + "&format=json" + "&lang=" + language + "&geometry=true&fullCount=false" + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "")  + "&appID=iotapp"), true); // false for synchronous request
+            logger.info(encodeURI(uri + "/?queryId=" + queryid + "&format=json" + "&lang=" + language + "&geometry=true&fullCount=false" + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
+            xmlHttp.open("GET", encodeURI(uri + "/?queryId=" + queryid + "&format=json" + "&lang=" + language + "&geometry=true&fullCount=false" + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), true); // false for synchronous request
             xmlHttp.onload = function (e) {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
+                        logger.info("ResponseText: " + xmlHttp.responseText);
                         if (xmlHttp.responseText != "") {
-                            var response = JSON.parse(xmlHttp.responseText);
+                            var response = "";
+                            try {
+                                response = JSON.parse(xmlHttp.responseText);
+                            } catch (error){
+                                logger.error("Problem Parsing data " + xmlHttp.responseText);
+                            }
+                            logger.info("Response: " + response);
                             var serviceUriArray = [];
                             var completeFeatures = {
                                 "Results": {
@@ -61,18 +69,19 @@ module.exports = function (RED) {
                         } else {
                             msgs[0].payload = JSON.parse("{\"status\": \"error\"}");
                             msgs[1].payload = JSON.parse("{\"status\": \"error\"}");
+                            logger.error("xmlHttp.responseText empty");
                             msgs[2].payload = JSON.parse("{\"status\": \"error\"}");
                         }
                         s4cUtility.eventLog(RED, inPayload, msgs, config, "Node-Red", "ASCAPI", uri, "RX");
                         node.send(msgs);
                     } else {
-                        console.error(xmlHttp.statusText);
+                        logger.error(xmlHttp.statusText);
                         node.error(xmlHttp.responseText);
                     }
                 }
             };
             xmlHttp.onerror = function (e) {
-                console.error(xmlHttp.statusText);
+                logger.error(xmlHttp.statusText);
                 node.error(xmlHttp.responseText);
             };
             xmlHttp.send(null);

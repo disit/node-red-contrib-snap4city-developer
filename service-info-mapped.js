@@ -16,12 +16,13 @@
 module.exports = function (RED) {
 
     function ServiceInfoMapped(config) {
-        var s4cUtility = require("./snap4city-utility.js");
         RED.nodes.createNode(this, config);
         var node = this;
+        var s4cUtility = require("./snap4city-utility.js");
+        const logger = s4cUtility.getLogger(RED, node);
         node.on('input', function (msg) {
             var uri = "http://processloader.snap4city.org/processloader/mapping/getDestination.php";
-            var uid = s4cUtility.retrieveAppID(RED);
+            const uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
             var serviceuri = (msg.payload.serviceuri ? msg.payload.serviceuri : config.serviceuri);
             var destinationServiceUri = serviceuri;
@@ -29,8 +30,8 @@ module.exports = function (RED) {
             var fromtime = (msg.payload.fromtime ? msg.payload.fromtime : config.fromtime);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            console.log(encodeURI(uri + "?" + (typeof serviceuri != "undefined" && serviceuri != "" ? "&source=" + serviceuri : "")));
-            xmlHttp.open("GET", encodeURI(uri + "?" + (typeof serviceuri != "undefined" && serviceuri != "" ? "&source=" + serviceuri : "")), false);
+            logger.info(encodeURI(uri + "/?" + (typeof serviceuri != "undefined" && serviceuri != "" ? "&source=" + serviceuri : "")));
+            xmlHttp.open("GET", encodeURI(uri + "/?" + (typeof serviceuri != "undefined" && serviceuri != "" ? "&source=" + serviceuri : "")), false);
             xmlHttp.setRequestHeader("Content-Type", "application/json");
             xmlHttp.send(null);
             if (xmlHttp.responseText != "[]") {
@@ -42,9 +43,9 @@ module.exports = function (RED) {
             }
             s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "Mapping", uri, "RX");
 
-            uri = "https://www.disit.org/superservicemap/api/v1/";
-            console.log(encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
-            xmlHttp.open("GET", encodeURI(uri + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), false); // false for synchronous request
+            uri = (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://www.disit.org/superservicemap/api/v1");
+            logger.info(encodeURI(uri + "/?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
+            xmlHttp.open("GET", encodeURI(uri + "/?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), false); // false for synchronous request
             xmlHttp.send(null);
             if (xmlHttp.responseText != "") {
                 try {
@@ -54,8 +55,8 @@ module.exports = function (RED) {
                 }
             }
             if (destinationServiceUri != serviceuri) {
-                console.log(encodeURI(uri + "?serviceUri=" + destinationServiceUri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
-                xmlHttp.open("GET", encodeURI(uri + "?serviceUri=" + destinationServiceUri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), false); // false for synchronous request
+                logger.info(encodeURI(uri + "/?serviceUri=" + destinationServiceUri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
+                xmlHttp.open("GET", encodeURI(uri + "/?serviceUri=" + destinationServiceUri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), false); // false for synchronous request
                 xmlHttp.send(null);
                 if (xmlHttp.responseText != "") {
                     try {

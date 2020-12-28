@@ -14,24 +14,26 @@
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 module.exports = function (RED) {
-    
+
     function Mapping(config) {
-        var s4cUtility = require("./snap4city-utility.js");
         RED.nodes.createNode(this, config);
         var node = this;
+        var s4cUtility = require("./snap4city-utility.js");
+        const logger = s4cUtility.getLogger(RED, node);
         node.on('input', function (msg) {
             var uri = "http://processloader.snap4city.org/processloader/mapping/getDestination.php";
-            var uid = s4cUtility.retrieveAppID(RED);
+            const uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
             var source = (msg.payload.source ? msg.payload.source : config.source);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            console.log(encodeURI(uri + "?" + (typeof source != "undefined" && source != "" ? "&source=" + source : "")));
-            xmlHttp.open("GET", encodeURI(uri + "?" + (typeof source != "undefined" && source != "" ? "&source=" + source : "")), true);
+            logger.info(encodeURI(uri + "/?" + (typeof source != "undefined" && source != "" ? "&source=" + source : "")));
+            xmlHttp.open("GET", encodeURI(uri + "/?" + (typeof source != "undefined" && source != "" ? "&source=" + source : "")), true);
             xmlHttp.setRequestHeader("Content-Type", "application/json");
             xmlHttp.onload = function (e) {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
+                        logger.info("ResponseText: " + xmlHttp.responseText);
                         if (xmlHttp.responseText != "") {
                             try {
                                 msg.payload = JSON.parse(xmlHttp.responseText).destination;
@@ -44,12 +46,14 @@ module.exports = function (RED) {
                         s4cUtility.eventLog(RED, inPayload, msg, config, "Node-Red", "Mapping", uri, "RX");
                         node.send(msg);
                     } else {
-                        console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                        logger.error(xmlHttp.statusText);
+                        node.error(xmlHttp.responseText);
                     }
                 }
             };
             xmlHttp.onerror = function (e) {
-                console.error(xmlHttp.statusText);   node.error(xmlHttp.responseText);
+                logger.error(xmlHttp.statusText);
+                node.error(xmlHttp.responseText);
             };
             xmlHttp.send(null);
 
