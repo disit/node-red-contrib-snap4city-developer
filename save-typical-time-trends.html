@@ -1,0 +1,431 @@
+<!--/* NODE-RED-CONTRIB-SNAP4CITY-USER
+   Copyright (C) 2018 DISIT Lab http://www.disit.org - University of Florence
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */-->
+<script type="text/javascript">
+    RED.nodes.registerType('save-typical-time-trends', {
+        category: 'S4CIoT',
+        color: '#b0dfe3',
+        defaults: {
+            name: {
+                value: ""
+            },
+            authentication: {
+                type: "snap4city-authentication",
+                required: false
+            },
+            serviceUri: {
+                value: "",
+                required: false
+            },
+            deviceName: {
+                value: "",
+                required: false
+            },
+            valueName: {
+                value: "",
+                required: false
+            },
+            valueUnit: {
+                value: "",
+                required: false
+            },
+            referenceDate: {
+                value: "",
+                required: false
+            },
+            numberOfPeriods: {
+                value: 1,
+                required: false,
+                validate: RED.validators.number()
+            },
+            from: {
+                value: "",
+                required: false
+            },
+            to: {
+                value: "",
+                required: false
+            },
+            trendType: {
+                value: "",
+                required: false
+            },
+            computationType: {
+                value: "",
+                required: false
+            }
+        },
+        outputs: 1,
+        inputs: 1,
+        icon: "trend.png",
+        label: function () {
+            return this.name || "save-typical-time-trends";
+        },
+        oneditprepare: function () {
+            var accessToken = "";
+            $.ajax({
+                url: "isThereLocalRefreshToken/",
+                type: "GET",
+                async: false,
+                success: function (resp) {
+                    if (resp.result) {
+                        $("#rowAuthentication").hide();
+                        $("#tipAuthentication").hide();
+                    }else{
+                        $.ajax({
+                            url: "setChangedUser/",
+                            async: false,
+                            type: "POST",
+                            dataType: "json",
+                            data: {
+                                "changedUser": "false"
+                            }
+                        });
+                        $.ajax({
+                            url: "retrieveAccessTokenAuthentication",
+                            type: "GET",
+                            async: false,
+                            success: function (_data) {
+                                if (_data.accessToken == "") {
+                                    $('#tipAuthenticationWrong').show();
+                                    $('#tipAuthentication').hide();
+                                } else {
+                                    accessToken = _data.accessToken;
+                                };
+                            }
+                        });
+                    }
+                }
+            });
+        },
+        oneditsave: function () {
+            $("#node-input-name").val("SaveTypicalTimeTrends ");
+        },
+        oneditresize: function () {
+            $.ajax({
+                url: "isThereLocalRefreshToken/",
+                type: "GET",
+                async: false,
+                success: function (resp) {
+                    if (!resp.result) {
+                        if ($("#node-input-authentication").children().length > 1) {
+                            $("#node-input-authentication option[value='_ADD_']").remove();
+                        }
+                        $.ajax({
+                            url: "getChangedUser/",
+                            type: "GET",
+                            async: false,
+                            success: function (resp) {
+                                if (resp.changedUser == "true") {
+                                    $("#tipAuthentication").hide();
+                                    $("#tipAuthenticationWrong").hide();
+                                    $("#tipAuthenticationRedeploy").show();
+                                }
+                            },
+                            error: function (err) {
+                                if (err.status == 404) {
+                                    $("#tipAuthentication").show();
+                                    $("#tipAuthenticationDeployFirstTime").show();
+                                    $("#tipAuthenticationWrong").hide();
+                                    $("#tipAuthenticationRedeploy").hide();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    });
+
+
+</script>
+
+<script type="text/x-red" data-template-name="save-typical-time-trends">
+        <div class="form-row" id="rowAuthentication">
+        <label for="node-input-authentication">Authentication</label>
+        <input type="text" id="node-input-authentication">
+    </div>
+    <div class="form-tips"  id="tipAuthentication" style="max-width: none">
+        You must have an account with Snap4city to use this node. You can register for one <a href="https://www.snap4city.org" target="_blank">here</a>.
+    </div>
+    <div class="form-tips" id="tipAuthenticationWrong" style="display:none; max-width: none">
+        Maybe the authentication data are wrong. Check them and redeploy the node.
+    </div>
+    <div class="form-tips"  id="tipAuthenticationRedeploy" style="display:none; max-width: none">
+        Deploy the node to retrieve the updated list of dashboards.
+    </div>
+    <div class="form-tips"  id="tipAuthenticationDeployFirstTime" style="display:none; max-width: none">
+        Insert the authentication data and deploy the node to retrieve the updated list of dashboards.
+    </div>
+
+
+    <div class="form-row">
+        <label for="node-input-serviceUri">serviceUri</label>
+        <input type="text" autocomplete="off" id="node-input-serviceUri" placeholder="Service Uri (ex. http://www.disit.....)">
+    </div>
+    <div class="form-row">
+        <label for="node-input-deviceName">deviceName</label>
+        <input type="text" autocomplete="off" id="node-input-deviceName" placeholder="Device Name (ex. METRO11)">
+    </div>
+    <div class="form-row">
+        <label for="node-input-valueName">valueName</label>
+        <input type="text" autocomplete="off" id="node-input-valueName" placeholder="Value Name (ex. averageSpeed)">
+    </div>
+    <div class="form-row">
+        <label for="node-input-valueUnit">valueUnit</label>
+        <input type="text" autocomplete="off" id="node-input-valueUnit" placeholder="Value Unit (ex. km/h)">
+    </div>
+    <div class="form-row">
+        <label for="node-input-referenceDate">referenceDate</label>
+        <input type="text" autocomplete="off" id="node-input-referenceDate" placeholder="yyyy-mm-dd">
+    </div>
+    <div class="form-row">
+        <label for="node-input-numberOfPeriods">numberOfPeriods</label>
+        <input type="text" autocomplete="off" id="node-input-numberOfPeriods" placeholder="Number of Periods">
+    </div>
+    <div class="form-row">
+        <label for="node-input-from">from</label>
+        <input type="text" autocomplete="off" id="node-input-from" placeholder="from yyyy-mm-dd">
+    </div>
+    <div class="form-row">
+        <label for="node-input-to">to</label>
+        <input type="text" autocomplete="off" id="node-input-to" placeholder="to yyyy-mm-dd">
+    </div>
+    <div class="form-row">
+        <label for="node-input-trendType">trendType</label>
+        <select name="trendType" id="node-input-trendType">
+            <option value="monthWeek">monthWeek</option>
+            <option value="monthDay">monthDay</option>
+            <option value="dayHour">dayHour</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-computationType">computationType</label>
+        <select name="computationType" id="node-input-computationType">
+            <option value="average">average</option>
+            <option value="median">median</option>
+            <option value="min">min</option>
+            <option value="max">max</option>
+        </select>
+    </div>
+    
+    <div class="form-tips"  id="tipFormCompilation" style="max-width: none">
+        You have to complete the parameters present here with a json that contains the data and errors.
+    </div>
+
+</script>
+
+
+<script type="text/x-red" data-help-name="save-typical-time-trends">
+    <p>It allows to save typical time trend's data in the API. The services can be used in many different ways:
+    1) You can save a complete JSON that come from a plumber-data-analytic or from a function node through msg.payload;
+    2) You can save the value and error part of the JSON that come from a function node and insert manually the other parameters by compiling the form that is present in the save-typical-time-trends node. Pay attention because the complete JSON with parameters, values and errors, takes precedence over the parameters entered by the user. So if you insert a complete JSON in msg.payload the node will ignore the parameters inserted manually from the UI.</p>
+
+    <h3>Inputs</h3>
+    The input comes from msg.payload.response if you use the Typical Time Trend script or come from msg.payload and the manual parameters if you don't use the R script.
+
+    <dl class="message-properties">
+        <dt>serviceUri
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the uri of the sensor used as source of raw data. An examlpe is "http://www.disit.org/km4city/resource/METRO11/averageSpeed". You can find other type of sensor in the "Data Inspector" of Snap4city.</dd>
+        <dt>deviceName
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the name of the device that owns sensors. This name must be the same that is present in the Service Uri field. If the service uri is "http://www.disit.org/km4city/resource/METRO11/averageSpeed" the Device Name must be "METRO11".</dd>
+        <dt>valueName
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the name of the sensor that is also the name of the calculated value. This name must be the same that is present in the Service Uri field. If the service uri is "http://www.disit.org/km4city/resource/METRO11/averageSpeed" the Value Name must be "averageSpeed".</dd>
+        <dt>valueUnit
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the name of the metric unit related with the Value Name. An example can be "km/h" for "averageSpeed"</dd>
+        <dt>referenceDate
+            <span class="property-type">string</span>
+        </dt>
+        <dd> The format must be this: "yyyy-mm-dd". This is the data chosen to select the period used to collect raw data from sensors. </dd>
+        <dt>numberOfPeriods
+            <span class="property-type">number</span>
+        </dt>
+        <dd> This is the number of how many months or week that are used to compute the trends.</dd>
+        <dt>from
+            <span class="property-type">string</span>
+        </dt>
+        <dd> The format must be this: "yyyy-mm-dd". With reference date and number of periods we define the time interval of computations. This is the start data of the interval. </dd>
+        <dt>to
+            <span class="property-type">string</span>
+        </dt>
+        <dd> The format must be this: "yyyy-mm-dd". With reference date and number of periods we define the time interval of computations. This is the end data of the interval.</dd>
+        <dt>trendType
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the trend type that you want to save. There are 3 typical trend: monthDay, monthWeek and dayHour.</dd>
+        <dt>computationType
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the computation type that you want to use. There are 4 computation type: average, median, min or max.</dd>
+        
+    </dl>
+
+    <dl class="message-properties">
+    <dt>JSON Input</dt>
+    <dd>After completing the compilation of the previous form it is necessary to insert in input a JSON by linking this block with a function block that produces a JSON that contain the values ​​that will be saved. These values ​​have different formatting based on the selected trend. Below you can see how the three JSON must be constituted:</dd>
+
+    <dt>typicalMonthWeek</dt>
+    <dd>This must be an array with 28 numerical values in string format. The array must be named with "typicalMonthWeek". So let's see an example of this JSON:
+        <pre>
+            "typicalMonthWeek": [
+                                "46.2096",
+                                "51.4195",
+                                "48.7888",
+                                ...
+                             ]
+        </pre>
+    </dd>
+    <dt>typicalMonthD</dt>
+    <dd>This must be an array with 30 numerical values in string format. The array must be named with "typicalMonthD". So let's see an example of this JSON:
+        <pre>
+            "typicalMonthD": [
+                                "46.2096",
+                                "51.4195",
+                                "48.7888",
+                                ...
+                             ]
+        </pre></dd>
+    <dt>typicalDays</dt>
+    <dd>This must be a JSON consisting of 7 array. Each one of this array must contain 24 numerical values in string format.The main array must be named with "typicalDays". The other seven array must be named with the day of the week like "Monday" and so on.So let's see an example of this JSON:
+        <pre>
+            "typicalDays": { 
+                        "Monday": [
+                                    "46.2096",
+                                    "51.4195",
+                                    "48.7888",
+                                    .....
+                                  ],
+                        "Tuesday": [
+                                    "46.2096",
+                                    "51.4195",
+                                    "48.7888",
+                                    .....
+                                ], 
+                        ....... 
+                        "Sunday": [......]
+                            }
+                            </pre></dd>
+
+    <dt>wrongValues</dt>
+    This is an array which contains an array of string where you can report the error about raw data, like missing values or negative values. Based on the trend we choose, we will have arrays with a different structure.
+
+    <dt>monthWeekError</dt>
+    This is a simple array of string, like the example below:
+    <pre>
+        "wrongValues": {
+                    "monthWeekError":[
+                    "In this period: 2020-09-30T12:00:00 - 2020-09-30T13:00:00 there aren't value"
+                    ]
+            }
+    </pre>
+
+    <dt>monthDayError</dt>
+    This is a simple array of string, like the example below:
+    <pre>
+        "wrongValues": {
+                    "monthDayError":"No error for this trend"
+            }
+    </pre>
+
+    <dt>dayHourError</dt>
+    For this trend we have 7 arrays, one for each day of the week (mondayError,tuesdayError,wednesdayError,thursdayError,fridayError,saturdayError,sundayError). For more details see the example below:
+    <pre>
+        "wrongValues": {
+            "mondayError": "No error for this trend",
+            "tuesdayError": "No error for this trend",
+            "wednesdayError": [
+                "In this period: 2020-09-30T12:00:00 - 2020-09-30T13:00:00 there aren't value"
+                ],
+            "thursdayError": [ 
+                "In this period: 2020-10-01T00:00:00 - 2020-10-01T01:00:00 there aren't value"
+                ],
+            "fridayError": "No error for this trend",
+            "saturdayError": "No error for this trend",
+            "sundayError": "No error for this trend"
+        }
+    </pre>
+    </dl>
+
+    <h3>Complete Input Example</h3>
+    <p> This is an example of a complete JSON input for the monthDay trend: </p>
+    <pre>
+        {
+            "serviceUri": "http://www.disit.org/km4city/resource/METRO11",
+            "deviceName": "METRO11",
+            "valueName": "averageSpeed",
+            "valueUnit": "km/h",
+            "referenceDate": "2020-10-12",
+            "numberOfPeriods": 2,
+            "from": "2020-08-01",
+            "to": "2020-09-30",
+            "trendType": "monthDay",
+            "computationType": "average",
+            "typicalMonthD": [
+                "59.2039",
+                "58.8606",
+                "59.1556",
+                "59.2643",
+                "59.2175",
+                "58.7546",
+                "59.0367",
+                "58.89",
+                "59.0059",
+                "59.6978",
+                "59.8696",
+                "59.5698",
+                "57.9666",
+                "59.5293",
+                "59.3678",
+                "58.8308",
+                "59.8795",
+                "59.6743",
+                "59.4784",
+                "59.1038",
+                "58.9039",
+                "58.9305",
+                "58.7942",
+                "60.0248",
+                "59.9674",
+                "59.9843",
+                "59.8559",
+                "59.6011",
+                "59.486",
+                "59.4171"
+                ],
+            "wrongValues": {
+                "monthDayError": "No error for this trend"
+                } 
+            }
+    </pre>
+
+
+    <h3>Outputs</h3>
+    <ol class="node-ports">
+       <p>The output is the result of the operations: "Success" or the error code.</p>
+    </ol>
+
+    <h3>Details</h3>
+    <p>The node can receive a JSON with the parameters described in the Inputs section and with them generate the output JSON. If the values are not present in the input JSON, these are read by those in the configuration. If they are not present in either part, an error is generated for the necessary parameters.</p>
+
+
+</script>

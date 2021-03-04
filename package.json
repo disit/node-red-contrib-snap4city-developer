@@ -1,7 +1,8 @@
 {
     "name": "node-red-contrib-snap4city-developer",
-    "version": "0.3.6",
+    "version": "0.4.2",
     "dependencies": {
+        "atob": "^2.1.2",
         "express": "^4.17.1",
         "form-data": "^3.0.0",
         "httpclient": "^0.1.0",
@@ -105,7 +106,11 @@
             "om-create-new-process": "om-create-new-process.js",
             "om-advance-process": "om-advance-process.js",
             "om-details-process": "om-details-process.js",
-            "om-delete-process": "om-delete-process.js"
+            "om-delete-process": "om-delete-process.js",
+            "save-typical-time-trends": "save-typical-time-trends.js",
+			"get-typical-time-trends": "get-typical-time-trends.js",
+            "whatif-get-my-scenarios": "whatif-get-my-scenarios.js",
+            "whatif-save-a-scenario": "whatif-save-a-scenario.js"
         }
     }
 }

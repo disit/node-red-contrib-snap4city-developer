@@ -147,7 +147,7 @@
             return response;
         }
 
-        RED.httpAdmin.get("/retrieveAccessTokenAuthentication/", RED.auth.needsPermission('snap4city-authentication.read'), function (req, res) {
+        RED.httpAdmin.get("/retrieveAccessTokenAuthenticationDev/", RED.auth.needsPermission('snap4city-authentication-dev.read'), function (req, res) {
             var s4cUtility = require("./snap4city-utility.js");
             res.json({
                 "accessToken": s4cUtility.retrieveAccessToken(RED, node, node.id, null),
