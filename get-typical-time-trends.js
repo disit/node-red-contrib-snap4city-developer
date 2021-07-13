@@ -28,6 +28,11 @@ module.exports = function (RED) {
 			var valueUnit = (msg.payload.valueUnit ? msg.payload.valueUnit : config.valueUnit);
 			var atDate = (msg.payload.atDate ? msg.payload.atDate : config.atDate);
 			var trendType = (msg.payload.trendType ? msg.payload.trendType : config.trendType);
+			var computationType = (msg.payload.computationType ? msg.payload.computationType : config.computationType);
+			var from = (msg.payload.from ? msg.payload.from : config.from);
+			var to = (msg.payload.to ? msg.payload.to : config.to);	
+			
+			
 			
             if (responseFromApi) {
                 var accessToken = "";
@@ -45,8 +50,17 @@ module.exports = function (RED) {
 				if(trendType!=""&& typeof trendType != "undefined"){
 					uri=uri+ "&trendType="+trendType;
 				}
+				if(computationType!=""&& typeof computationType != "undefined"){
+					uri=uri+ "&computationType="+computationType;
+				}
 				if(atDate!=""&& typeof atDate != "undefined"){
 					uri=uri+ "&atDate="+atDate;
+				}
+				if(from!=""&& typeof from != "undefined"){
+					uri=uri+ "&from="+from;
+				}
+				if(to!=""&& typeof to != "undefined"){
+					uri=uri+ "&to="+to;
 				}
                     xmlHttp.open("GET", encodeURI(uri), true); // false for synchronous request
 					
@@ -96,7 +110,7 @@ module.exports = function (RED) {
 
 
     RED.httpAdmin.get('/myPersonalDataUrl', function (req, res) {
-        var myPersonalDataUrl = (RED.settings.myPersonalDataUrl ? RED.settings.myPersonalDataUrl : "https://www.snap4city.org/mypersonaldata/");
+        var myPersonalDataUrl = (RED.settings.myPersonalDataUrl ? RED.settings.myPersonalDataUrl : "https://www.snap4city.org/mypersonaldata/api/v1");
         res.send({
             "myPersonalDataUrl": myPersonalDataUrl
         });

@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */-->
 <script type="text/javascript">
     RED.nodes.registerType('get-typical-time-trends', {
-        category: 'S4CIoT',
+        category: 'S4CTTimeTrend',
         color: '#b0dfe3',
         defaults: {
             name: {
@@ -38,6 +38,18 @@
                 required: false
             },
             trendType: {
+                value: "",
+                required: false
+            },
+            computationType: {
+                value: "",
+                required: false
+            },
+            from: {
+                value: "",
+                required: false
+            },
+            to: {
                 value: "",
                 required: false
             }
@@ -158,15 +170,33 @@
         <label for="node-input-atDate">atDate</label>
         <input type="text" autocomplete="off" id="node-input-atDate" placeholder="yyyy-mm-dd">
     </div>
+	<div class="form-row">
+        <label for="node-input-from">from</label>
+        <input type="text" autocomplete="off" id="node-input-from" placeholder="from yyyy-mm-dd">
+    </div>
+    <div class="form-row">
+        <label for="node-input-to">to</label>
+        <input type="text" autocomplete="off" id="node-input-to" placeholder="to yyyy-mm-dd">
+    </div>
     <div class="form-row">
         <label for="node-input-trendType">trendType</label>
         <select name="trendType" id="node-input-trendType">
+			<option value="">All</option>
             <option value="monthWeek">monthWeek</option>
             <option value="monthDay">monthDay</option>
             <option value="dayHour">dayHour</option>
         </select>
     </div>
-        
+	<div class="form-row">
+        <label for="node-input-computationType">computationType</label>
+        <select name="computationType" id="node-input-computationType">
+			<option value="">All</option>
+            <option value="average">average</option>
+            <option value="median">median</option>
+            <option value="min">min</option>
+            <option value="max">max</option>
+        </select>
+    </div>    
     <div class="form-tips"  id="tipFormCompilation" style="max-width: none">
         You have to complete the parameters present here with a json that contains the data and errors.
     </div>
@@ -188,6 +218,36 @@
         <p> A JSON file indicating the list of a typical time trend</p>
     
 
-   
+	 <dl class="message-properties">
+        <dt>serviceUri (required)
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the uri of the sensor used as source of raw data. You can find type of sensor in the "Data Inspector" of Snap4city.</dd>
+        <dt>valueName (optional)
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the name of the sensor that is also the name of the calculated value. </dd>
+        <dt>atDate (optional)
+            <span class="property-type">string</span>
+        </dt>
+        <dd> The format must be this: "yyyy-mm-dd". This is the data chosen to select the period used to collect raw data from sensors. </dd>
+        <dt>from (optional)
+            <span class="property-type">string</span>
+        </dt>
+        <dd> The format must be this: "yyyy-mm-dd". With reference date and number of periods we define the time interval of computations. This is the start date of the interval. </dd>
+        <dt>to (optional)
+            <span class="property-type">string</span>
+        </dt>
+        <dd> The format must be this: "yyyy-mm-dd". With reference date and number of periods we define the time interval of computations. This is the end date of the interval.</dd>
+        <dt>trendType (optional)
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the trend type that you want to save. There are 3 typical trend: monthDay, monthWeek and dayHour.</dd>
+        <dt>computationType (optional)
+            <span class="property-type">string</span>
+        </dt>
+        <dd> This is the computation type that you want to use. There are 4 computation type: average, median, min or max.</dd>
+        
+    </dl>
 
 </script>

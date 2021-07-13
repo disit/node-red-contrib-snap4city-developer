@@ -173,7 +173,7 @@ console.log(msg.payload.typicalMonthWeek);
 
 
     RED.httpAdmin.get('/myPersonalDataUrl', function (req, res) {
-        var myPersonalDataUrl = (RED.settings.myPersonalDataUrl ? RED.settings.myPersonalDataUrl : "https://www.snap4city.org/mypersonaldata/");
+        var myPersonalDataUrl = (RED.settings.myPersonalDataUrl ? RED.settings.myPersonalDataUrl : "https://www.snap4city.org/mypersonaldata/api/v1");
         res.send({
             "myPersonalDataUrl": myPersonalDataUrl
         });
