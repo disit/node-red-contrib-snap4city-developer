@@ -22,7 +22,8 @@ module.exports = function (RED) {
         const logger = s4cUtility.getLogger(RED, node);
         const uid = s4cUtility.retrieveAppID(RED);
         node.on('input', function (msg) {
-            var uri = (RED.settings.myPersonalDataUrl ? RED.settings.myPersonalDataUrl : "https://www.snap4city.org/mypersonaldata/api/v1") + "/username/" + (s4cUtility.retrieveCurrentUser(RED, node, config.authentication)).toLowerCase() + "/data";
+            node.s4cAuth = RED.nodes.getNode(config.authentication);
+            var uri = s4cUtility.settingUrl(RED,node, "myPersonalDataUrl", "https://www.snap4city.org", "/datamanager/api/v1/") + "username/" + (s4cUtility.retrieveCurrentUser(RED, node, config.authentication)).toLowerCase() + "/data";
             var inPayload = msg.payload;
             var scenarioName = (msg.payload.scenarioName ? msg.payload.scenarioName : config.scenarioName);
             var scenarioDescription = (msg.payload.scenarioDescription ? msg.payload.scenarioDescription : config.scenarioDescription);

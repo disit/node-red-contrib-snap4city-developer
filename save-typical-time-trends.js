@@ -14,121 +14,143 @@
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 module.exports = function (RED) {
-	
-		function isGoodFormat(x) {
-			val='True'
-			console.log(x !== 'undefined')
-			if(typeof x !== 'undefined'){
-				  for (i = 0; i < x.length; i++) {
 
-					if(typeof x[i] !== 'string' || typeof x[i] === 'undefined'){
-					val='False'
-						}   
-					}
-		}else{
-			val='False'
-		}
-		 return val
-		}
-		
-		
-		function isGoodFormatWeek(xD) {
-			val='True'
-			//console.log(x !== 'undefined')
-			tD=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
-			for (itD = 0; itD < 7; itD++) {
-				if(typeof tD[itD] !== 'undefined'){
-				x=xD[tD[itD]];
-				if(typeof x !== 'undefined'){
-					for (i = 0; i < x.length; i++) {
-						console.log("Primo")
-						console.log(x[i])
-							if(typeof x[i] !== 'string' || typeof x[i] === 'undefined'){
-								val='False'
-								break
-								}   
-						}
-					}
-				}else{
-					val='False'
-					break
-				}				
-				console.log(itD)
-			}
-			return val
-		}
+    function isGoodFormat(x) {
+        val = 'True'
+        console.log(x !== 'undefined')
+        if (typeof x !== 'undefined') {
+            for (i = 0; i < x.length; i++) {
 
-		
-		
+                if (typeof x[i] !== 'string' || typeof x[i] === 'undefined') {
+                    val = 'False'
+                }
+            }
+        } else {
+            val = 'False'
+        }
+        return val
+    }
+
+
+    function isGoodFormatWeek(xD) {
+        val = 'True'
+        //console.log(x !== 'undefined')
+        tD = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        for (itD = 0; itD < 7; itD++) {
+            if (typeof tD[itD] !== 'undefined') {
+                x = xD[tD[itD]];
+                if (typeof x !== 'undefined') {
+                    for (i = 0; i < x.length; i++) {
+                        console.log("Primo")
+                        console.log(x[i])
+                        if (typeof x[i] !== 'string' || typeof x[i] === 'undefined') {
+                            val = 'False'
+                            break
+                        }
+                    }
+                }
+            } else {
+                val = 'False'
+                break
+            }
+            console.log(itD)
+        }
+        return val
+    }
+
+
+
     function SaveTypicalTimeTrend(config) {
-		
+
         RED.nodes.createNode(this, config);
         var node = this;
         var msgs = new Object();
         node.on('input', function (msg) {
             var s4cUtility = require("./snap4city-utility.js");
             var uid = s4cUtility.retrieveAppID(RED);
-			var responseFromApi = (msg.payload);
-			var serviceUri = (msg.payload.serviceUri ? msg.payload.serviceUri : config.serviceUri);
-			var deviceName = (msg.payload.deviceName ? msg.payload.deviceName : config.deviceName);
-			var valueName = (msg.payload.valueName ? msg.payload.valueName : config.valueName);	
-			var valueUnit = (msg.payload.valueUnit ? msg.payload.valueUnit : config.valueUnit);
-			var referenceDate = (msg.payload.referenceDate ? msg.payload.referenceDate : config.referenceDate);
-			var numberOfPeriods = (msg.payload.numberOfPeriods ? msg.payload.numberOfPeriods : config.numberOfPeriods);
-			var from = (msg.payload.from ? msg.payload.from : config.from);
-			var to = (msg.payload.to ? msg.payload.to : config.to);
-			var trendType = (msg.payload.trendType ? msg.payload.trendType : config.trendType);
-			var computationType = (msg.payload.computationType ? msg.payload.computationType : config.computationType);
-console.log(typeof msg.payload.typicalMonthWeek);
-console.log(msg.payload.typicalMonthWeek);
+            var responseFromApi = (msg.payload);
+            var serviceUri = (msg.payload.serviceUri ? msg.payload.serviceUri : config.serviceUri);
+            var deviceName = (msg.payload.deviceName ? msg.payload.deviceName : config.deviceName);
+            var valueName = (msg.payload.valueName ? msg.payload.valueName : config.valueName);
+            var valueUnit = (msg.payload.valueUnit ? msg.payload.valueUnit : config.valueUnit);
+            var referenceDate = (msg.payload.referenceDate ? msg.payload.referenceDate : config.referenceDate);
+            var numberOfPeriods = (msg.payload.numberOfPeriods ? msg.payload.numberOfPeriods : config.numberOfPeriods);
+            var from = (msg.payload.from ? msg.payload.from : config.from);
+            var to = (msg.payload.to ? msg.payload.to : config.to);
+            var trendType = (msg.payload.trendType ? msg.payload.trendType : config.trendType);
+            var computationType = (msg.payload.computationType ? msg.payload.computationType : config.computationType);
+            console.log(typeof msg.payload.typicalMonthWeek);
+            console.log(msg.payload.typicalMonthWeek);
 
             if (responseFromApi) {
                 var accessToken = "";
-                var uri = (RED.settings.typicalTrendsUrl ? RED.settings.typicalTrendsUrl : (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://servicemap.km4city.org/WebAppGrafo/api/v1/")) + "values/typicaltrends";
+                node.s4cAuth = RED.nodes.getNode(config.authentication);
+                var uri = (node.s4cAuth.domain ? node.s4cAuth.domain : (RED.settings.typicalTrendsUrl ? RED.settings.typicalTrendsUrl : (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://servicemap.km4city.org/"))) + "ServiceMap/api/v1/values/typicaltrends";
                 accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
                 //console.log("Url " + uri);
-				 
+
                 if (accessToken != "" && typeof accessToken != "undefined") {
                     var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
                     var xmlHttp = new XMLHttpRequest();
                     xmlHttp.open("POST", encodeURI(uri + "?sourceRequest=iotapp&accessToken=" + accessToken), true);
-					//console.log(encodeURI(uri + "?sourceRequest=iotapp"));
+                    //console.log(encodeURI(uri + "?sourceRequest=iotapp"));
                     xmlHttp.setRequestHeader("Content-Type", "application/json");
                     xmlHttp.setRequestHeader("Authorization", "Bearer " + accessToken);
-					
-					var parameters = {"serviceUri":serviceUri, "deviceName":deviceName, "valueName":valueName, "valueUnit":valueUnit,
-										"referenceDate":referenceDate, "numberOfPeriods":numberOfPeriods, "from":from, "to":to,
-										"trendType":trendType, "computationType": computationType};
 
-		            if(trendType == "monthDay"){
-						formatJson=isGoodFormat(msg.payload.typicalMonthD);
-						if(formatJson==='False'){
-						node.error("Error in the Json format. Not all items are empty strings or float strings");
-						}
-					
-		               var values = { "typicalMonthD":msg.payload.typicalMonthD};
-		            }else if (trendType == "monthWeek"){
-						formatJson=isGoodFormat(msg.payload.typicalMonthWeek);
-						if(formatJson==='False'){
-						node.error("Error in the Json format. Not all items are empty strings or float strings");
-						}
-					
-		               var values = { "typicalMonthWeek":msg.payload.typicalMonthWeek};
-		            }else{
-						formatJson=isGoodFormatWeek(msg.payload.typicalDays);
-						if(formatJson==='False'){
-						node.error("Error in the Json format. Not all items are empty strings or float strings");
-						}
-		               var values = { "typicalDays":msg.payload.typicalDays};
-		            }
+                    var parameters = {
+                        "serviceUri": serviceUri,
+                        "deviceName": deviceName,
+                        "valueName": valueName,
+                        "valueUnit": valueUnit,
+                        "referenceDate": referenceDate,
+                        "numberOfPeriods": numberOfPeriods,
+                        "from": from,
+                        "to": to,
+                        "trendType": trendType,
+                        "computationType": computationType
+                    };
 
-		            var errors = {"wrongValues": msg.payload.wrongValues};
+                    if (trendType == "monthDay") {
+                        formatJson = isGoodFormat(msg.payload.typicalMonthD);
+                        if (formatJson === 'False') {
+                            node.error("Error in the Json format. Not all items are empty strings or float strings");
+                        }
+
+                        var values = {
+                            "typicalMonthD": msg.payload.typicalMonthD
+                        };
+                    } else if (trendType == "monthWeek") {
+                        formatJson = isGoodFormat(msg.payload.typicalMonthWeek);
+                        if (formatJson === 'False') {
+                            node.error("Error in the Json format. Not all items are empty strings or float strings");
+                        }
+
+                        var values = {
+                            "typicalMonthWeek": msg.payload.typicalMonthWeek
+                        };
+                    } else {
+                        formatJson = isGoodFormatWeek(msg.payload.typicalDays);
+                        if (formatJson === 'False') {
+                            node.error("Error in the Json format. Not all items are empty strings or float strings");
+                        }
+                        var values = {
+                            "typicalDays": msg.payload.typicalDays
+                        };
+                    }
+
+                    var errors = {
+                        "wrongValues": msg.payload.wrongValues
+                    };
 
 
-		            var jsonToSend = {...parameters, ...values, ...errors};
-		            //console.log("JSON PRIMA :" + jsonToSend);
+                    var jsonToSend = {
+                        ...parameters,
+                        ...values,
+                        ...errors
+                    };
+                    //console.log("JSON PRIMA :" + jsonToSend);
 
-					xmlHttp.onload = function (e) {
+                    xmlHttp.onload = function (e) {
                         if (xmlHttp.readyState === 4) {
                             if (xmlHttp.status === 200) {
                                 if (xmlHttp.responseText != "") {
@@ -154,12 +176,12 @@ console.log(msg.payload.typicalMonthWeek);
                         console.error(xmlHttp.statusText);
                         node.error(xmlHttp.responseText);
                     };
-					if(formatJson==='True'){
-					xmlHttp.send(JSON.stringify(jsonToSend));
-					console.log("Entrato");
-					}				
-					//console.log("JSON dopo" + JSON.stringify(jsonToSend));
-					
+                    if (formatJson === 'True') {
+                        xmlHttp.send(JSON.stringify(jsonToSend));
+                        console.log("Entrato");
+                    }
+                    //console.log("JSON dopo" + JSON.stringify(jsonToSend));
+
                 } else {
                     node.error("Open the configuration of the node and redeploy");
                 }
@@ -171,30 +193,11 @@ console.log(msg.payload.typicalMonthWeek);
 
     RED.nodes.registerType("save-typical-time-trends", SaveTypicalTimeTrend);
 
-
-    RED.httpAdmin.get('/myPersonalDataUrl', function (req, res) {
-        var myPersonalDataUrl = (RED.settings.myPersonalDataUrl ? RED.settings.myPersonalDataUrl : "https://www.snap4city.org/mypersonaldata/api/v1");
-        res.send({
-            "myPersonalDataUrl": myPersonalDataUrl
-        });
-    });
-
     RED.httpAdmin.get('/ownershipUrl', function (req, res) {
         var ownershipUrl = (RED.settings.ownershipUrl ? RED.settings.ownershipUrl : "https://www.snap4city.org/ownership-api/");
         res.send({
             "ownershipUrl": ownershipUrl
         });
     });
-
-
-    RED.httpAdmin.get('/typicalTrendsUrl', function (req, res) {
-        var typicalTrendsUrl =  (RED.settings.typicalTrendsUrl ? RED.settings.typicalTrendsUrl : (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://servicemap.km4city.org/WebAppGrafo/api/v1/")) + "values/typicaltrends";
-        res.send({
-            "typicalTrendsUrl": typicalTrendsUrl
-        });
-    });
-
-
-    //ELIMINATO FUNZIONE myDeviceDataList
 
 }

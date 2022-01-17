@@ -73,79 +73,8 @@
         label: function () {
             return this.name || "save-typical-time-trends";
         },
-        oneditprepare: function () {
-            var accessToken = "";
-            $.ajax({
-                url: "isThereLocalRefreshToken/",
-                type: "GET",
-                async: false,
-                success: function (resp) {
-                    if (resp.result) {
-                        $("#rowAuthentication").hide();
-                        $("#tipAuthentication").hide();
-                    }else{
-                        $.ajax({
-                            url: "setChangedUser/",
-                            async: false,
-                            type: "POST",
-                            dataType: "json",
-                            data: {
-                                "changedUser": "false"
-                            }
-                        });
-                        $.ajax({
-                            url: "retrieveAccessTokenAuthentication",
-                            type: "GET",
-                            async: false,
-                            success: function (_data) {
-                                if (_data.accessToken == "") {
-                                    $('#tipAuthenticationWrong').show();
-                                    $('#tipAuthentication').hide();
-                                } else {
-                                    accessToken = _data.accessToken;
-                                };
-                            }
-                        });
-                    }
-                }
-            });
-        },
         oneditsave: function () {
             $("#node-input-name").val("SaveTypicalTimeTrends ");
-        },
-        oneditresize: function () {
-            $.ajax({
-                url: "isThereLocalRefreshToken/",
-                type: "GET",
-                async: false,
-                success: function (resp) {
-                    if (!resp.result) {
-                        if ($("#node-input-authentication").children().length > 1) {
-                            $("#node-input-authentication option[value='_ADD_']").remove();
-                        }
-                        $.ajax({
-                            url: "getChangedUser/",
-                            type: "GET",
-                            async: false,
-                            success: function (resp) {
-                                if (resp.changedUser == "true") {
-                                    $("#tipAuthentication").hide();
-                                    $("#tipAuthenticationWrong").hide();
-                                    $("#tipAuthenticationRedeploy").show();
-                                }
-                            },
-                            error: function (err) {
-                                if (err.status == 404) {
-                                    $("#tipAuthentication").show();
-                                    $("#tipAuthenticationDeployFirstTime").show();
-                                    $("#tipAuthenticationWrong").hide();
-                                    $("#tipAuthenticationRedeploy").hide();
-                                }
-                            }
-                        });
-                    }
-                }
-            });
         }
     });
 

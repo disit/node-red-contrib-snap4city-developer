@@ -45,42 +45,27 @@
             return this.name || "plumber-data-analytic";
         },
         oneditprepare: function () {
-            $.ajax({
-                url: "isThereLocalRefreshToken/",
-                type: "GET",
+            
+         $.ajax({
+                url: "retrieveAccessTokenAuthenticationDev",
+                type: "POST",
                 async: false,
-                success: function (resp) {
-                    if (resp.result) {
-                        $("#rowAuthentication").hide();
-                        $("#tipAuthentication").hide();
-                    } else {
-                        $.ajax({
-                            url: "setChangedUser/",
-                            async: false,
-                            type: "POST",
-                            dataType: "json",
-                            data: {
-                                "changedUser": "false"
-                            }
-                        });
-                        $.ajax({
-                            url: "retrieveAccessTokenAuthenticationDev",
-                            type: "GET",
-                            async: false,
-                            success: function (_data) {
-                                if (_data.accessToken == "") {
-                                    $("#inputNameContainer").hide();
-                                    $("#inputScriptRFileContainer").hide();
-                                    $("#inputRelativeUrlContainer").hide();
-                                    $("#buttonPlumberCreateContainer").hide();
-                                    $('#tipAuthenticationWrong').show();
-                                    $('#tipAuthentication').hide();
-                                }
-                            }
-                        });
-                    }
+                dataType: "json",
+                data: {
+                    "authenticationNodeId": $("#node-input-authentication").val()
+                },
+                success: function (_data) {
+                if (_data.accessToken == "") {
+                    $("#inputNameContainer").hide();
+                    $("#inputScriptRFileContainer").hide();
+                    $("#inputRelativeUrlContainer").hide();
+                    $("#buttonPlumberCreateContainer").hide();
+                    $('#tipAuthenticationWrong').show();
+                    $('#tipAuthentication').hide();
                 }
-            });
+            }
+        });
+                   
 
 
 
@@ -100,44 +85,14 @@
                     var accessToken = "";
                     var appId = "";
                     $.ajax({
-                        url: "isThereLocalRefreshToken/",
+                        url: "retrieveAccessTokenAuthenticationDev",
                         type: "GET",
                         async: false,
-                        success: function (resp) {
-                            if (resp.result) {
-                                $.ajax({
-                                    url: "getAccessToken",
-                                    type: "GET",
-                                    async: false,
-                                    success: function (_data) {
-                                        if (_data.accessToken != "") {
-                                            accessToken = _data.accessToken;
-                                            appId = _data.appId;
-                                        };
-                                    }
-                                });
-                            } else {
-                                $.ajax({
-                                    url: "setChangedUser/",
-                                    async: false,
-                                    type: "POST",
-                                    dataType: "json",
-                                    data: {
-                                        "changedUser": "false"
-                                    }
-                                });
-                                $.ajax({
-                                    url: "retrieveAccessTokenAuthenticationDev",
-                                    type: "GET",
-                                    async: false,
-                                    success: function (_data) {
-                                        if (_data.accessToken != "") {
-                                            accessToken = _data.accessToken;
-                                            appId = _data.appId;
-                                        };
-                                    }
-                                });
-                            }
+                        success: function (_data) {
+                            if (_data.accessToken != "") {
+                                accessToken = _data.accessToken;
+                                appId = _data.appId;
+                            };
                         }
                     });
                     if (accessToken != "") {
@@ -146,7 +101,9 @@
                         $("#node-dialog-ok").hide();
                         $.ajax({
                             url: encodeURI(
-                                "https://www.snap4city.org/snap4city-application-api/v1/?op=new_plumber&name=" +
+                                (RED.nodes.node($("#node-input-authentication").val()).domain? 
+                                RED.nodes.node($("#node-input-authentication").val()).domain :"https://www.snap4city.org") +
+                                "/snap4city-application-api/v1/?op=new_plumber&name=" +
                                 $("#node-input-name").val() + "&id=pl" + RED.nodes.id().replace(
                                     ".",
                                     "") + "&iotappid=" + appId + "&accessToken=" + accessToken),
@@ -193,48 +150,6 @@
             }
 
             $("#plumber-input-scriptrname").text(this.scriptrname);
-        },
-        oneditresize: function () {
-            $.ajax({
-                url: "isThereLocalRefreshToken/",
-                type: "GET",
-                async: false,
-                success: function (resp) {
-                    if (!resp.result) {
-                        if ($("#node-input-authentication").children().length > 1) {
-                            $("#node-input-authentication option[value='_ADD_']").remove();
-                        }
-                        $.ajax({
-                            url: "getChangedUser/",
-                            type: "GET",
-                            async: false,
-                            success: function (resp) {
-                                if (resp.changedUser == "true") {
-                                    $("#tipAuthentication").hide();
-                                    $("#tipAuthenticationWrong").hide();
-                                    $("#tipAuthenticationRedeploy").show();
-                                    $("#inputNameContainer").hide();
-                                    $("#inputScriptRFileContainer").hide();
-                                    $("#inputRelativeUrlContainer").hide();
-                                    $("#buttonPlumberCreateContainer").hide();
-                                }
-                            },
-                            error: function (err) {
-                                if (err.status == 404) {
-                                    $("#tipAuthentication").show();
-                                    $("#tipAuthenticationDeployFirstTime").show();
-                                    $("#tipAuthenticationWrong").hide();
-                                    $("#tipAuthenticationRedeploy").hide();
-                                    $("#inputNameContainer").hide();
-                                    $("#inputScriptRFileContainer").hide();
-                                    $("#inputRelativeUrlContainer").hide();
-                                    $("#buttonPlumberCreateContainer").hide();
-                                }
-                            }
-                        });
-                    }
-                }
-            });
         }
     });
 </script>

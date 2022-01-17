@@ -47,24 +47,6 @@
                 required: false
             },
         },
-        oneditprepare: function () {
-            $.ajax({
-                url: "isThereLocalRefreshToken/",
-                type: "GET",
-                async: false,
-                success: function (resp) {
-                    if (resp.result) {
-                        $("#rowAuthentication").hide();
-                        $("#tipAuthentication").hide();
-                    }
-                }
-            });
-        },
-        oneditresize: function () {
-            if ($("#node-input-authentication").children().length > 1) {
-                $("#node-input-authentication option[value='_ADD_']").remove();
-            }
-        },
         outputs: 3,
         inputs: 1,
         outputLabels: ["service uri array", "result geojson", "result geojson aggregate"],
@@ -129,7 +111,7 @@
         <dt>municipality
             <span class="property-type">string</span>
         </dt>
-        <dd> name of the municipality like FIRENZE, EMPOLI, PISA possibly with prefix “COMUNE di “</dd>
+        <dd> name of the municipality like FIRENZE, EMPOLI, PISA</dd>
         <dt>categories
             <span class="property-type">string</span>
         </dt>

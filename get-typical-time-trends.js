@@ -36,7 +36,8 @@ module.exports = function (RED) {
 			
             if (responseFromApi) {
                 var accessToken = "";
-                var uri = (RED.settings.typicalTrendsUrl ? RED.settings.typicalTrendsUrl : (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://servicemap.km4city.org/WebAppGrafo/api/v1/")) + "values/typicaltrends";
+                node.s4cAuth = RED.nodes.getNode(config.authentication);
+                var uri = (node.s4cAuth.domain ? node.s4cAuth.domain : (RED.settings.typicalTrendsUrl ? RED.settings.typicalTrendsUrl : (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://servicemap.km4city.org/"))) + "/ServiceMap/api/v1/values/typicaltrends";
                 accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
                 console.log("Url " + uri);
 				 
@@ -108,30 +109,11 @@ module.exports = function (RED) {
 
     RED.nodes.registerType("get-typical-time-trends", GetTypicalTimeTrend);
 
-
-    RED.httpAdmin.get('/myPersonalDataUrl', function (req, res) {
-        var myPersonalDataUrl = (RED.settings.myPersonalDataUrl ? RED.settings.myPersonalDataUrl : "https://www.snap4city.org/mypersonaldata/api/v1");
-        res.send({
-            "myPersonalDataUrl": myPersonalDataUrl
-        });
-    });
-
     RED.httpAdmin.get('/ownershipUrl', function (req, res) {
         var ownershipUrl = (RED.settings.ownershipUrl ? RED.settings.ownershipUrl : "https://www.snap4city.org/ownership-api/");
         res.send({
             "ownershipUrl": ownershipUrl
         });
     });
-
-
-    RED.httpAdmin.get('/typicalTrendsUrl', function (req, res) {
-        var typicalTrendsUrl =  (RED.settings.typicalTrendsUrl ? RED.settings.typicalTrendsUrl : (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://servicemap.km4city.org/WebAppGrafo/api/v1/")) + "values/typicaltrends";
-        res.send({
-            "typicalTrendsUrl": typicalTrendsUrl
-        });
-    });
-
-
-    //ELIMINATO FUNZIONE myDeviceDataList
 
 }

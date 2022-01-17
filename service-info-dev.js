@@ -21,13 +21,15 @@ module.exports = function (RED) {
         var s4cUtility = require("./snap4city-utility.js");
         const logger = s4cUtility.getLogger(RED, node);
         node.on('input', function (msg) {
-            var uri = (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://www.disit.org/superservicemap/api/v1");
+            node.s4cAuth = RED.nodes.getNode(config.authentication);
+            var uri = s4cUtility.settingUrl(RED,node, "ascapiUrl", "https://www.snap4city.org", "/superservicemap/api/v1/");
             var serviceuri = (msg.payload.serviceuri ? msg.payload.serviceuri : config.serviceuri);
             if (typeof serviceuri == "undefined" || (typeof serviceuri != "undefined" && serviceuri == "" && msg.payload.indexOf("://") != -1)) {
                 serviceuri = msg.payload;
             }
             var lang = (msg.payload.lang ? msg.payload.lang : config.lang);
             var fromtime = (msg.payload.fromtime ? msg.payload.fromtime : config.fromtime);
+            var valueName = (msg.payload.valuename ? msg.payload.valuename : config.valuename);
             var totime = (msg.payload.totime ? msg.payload.totime : config.totime);
             const uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
@@ -35,9 +37,9 @@ module.exports = function (RED) {
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            logger.info(encodeURI(uri + "/?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
+            logger.info(encodeURI(uri + "/?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (valueName ? "&valueName=" + valueName : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
             if (typeof serviceuri != "undefined" && serviceuri != "") {
-                xmlHttp.open("GET", encodeURI(uri + "/?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), true); // false for synchronous request
+                xmlHttp.open("GET", encodeURI(uri + "/?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (valueName ? "&valueName=" + valueName : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), true); // false for synchronous request
                 if (typeof accessToken != "undefined" && accessToken != "") {
                     xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
                 }

@@ -21,7 +21,8 @@ module.exports = function (RED) {
         var s4cUtility = require("./snap4city-utility.js");
         const logger = s4cUtility.getLogger(RED, node);
         node.on('input', function (msg) {
-            var uri = (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://www.disit.org/superservicemap/api/v1");
+            node.s4cAuth = RED.nodes.getNode(config.authentication);
+            var uri = s4cUtility.settingUrl(RED,node, "ascapiUrl", "https://www.snap4city.org", "/superservicemap/api/v1/");
             var selection = (msg.payload.selection ? msg.payload.selection : config.selection);
             var categories = (msg.payload.categories ? msg.payload.categories : config.categories);
             var maxDists = (msg.payload.maxdistance ? msg.payload.maxdistance : config.maxdists);

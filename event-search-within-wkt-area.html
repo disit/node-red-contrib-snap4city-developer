@@ -39,24 +39,6 @@
                 validate: RED.validators.number()
             }
         },
-        oneditprepare: function () {
-            $.ajax({
-                url: "isThereLocalRefreshToken/",
-                type: "GET",
-                async: false,
-                success: function (resp) {
-                    if (resp.result) {
-                        $("#rowAuthentication").hide();
-                        $("#tipAuthentication").hide();
-                    }
-                }
-            });
-        },
-        oneditresize: function () {
-            if ($("#node-input-authentication").children().length > 1) {
-                $("#node-input-authentication option[value='_ADD_']").remove();
-            }
-        },
         outputs: 2,
         inputs: 1,
         icon: "white-globe.png",
@@ -108,7 +90,7 @@
         <dt>wktarea
             <span class="property-type">string</span>
         </dt>
-        <dd> "&lt;WKT_string>” a described as Well Known Text</dd>
+        <dd> "&lt;WKT_string>” a described as Well Known Text (<a target="_blank" href="https://www.snap4city.org/drupal/node/737">info about WKT Area</a>)</dd>
         <dt>range
             <span class="property-type">string</span>
         </dt>
