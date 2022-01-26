@@ -76,13 +76,46 @@ module.exports = {
     },
 
     retrieveCurrentUser: function (RED, node, authentication) {
+        var fs = require('fs');
+        var atob = require('atob');
+        var response = "";
         if (node != null && authentication != null) {
             node.s4cAuth = RED.nodes.getNode(authentication);
             if (node.s4cAuth != null) {
-                return node.s4cAuth.retrieveCurrentUser();
+                response = node.s4cAuth.retrieveCurrentUser();
             }
         }
-        return "";
+        if (fs.existsSync('/data/refresh_token') && response == "") {
+            var refreshToken = fs.readFileSync('/data/refresh_token', 'utf-8');
+            var url = (RED.settings.keycloakBaseUri ? RED.settings.keycloakBaseUri : "https://www.snap4city.org/auth/realms/master/") + "/protocol/openid-connect/token/";
+            var params = "client_id=" + (RED.settings.keycloakClientid ? RED.settings.keycloakClientid : "nodered") + "&client_secret=" + (RED.settings.keycloakClientsecret ? RED.settings.keycloakClientsecret : "943106ae-c62c-4961-85a2-849f6955d404") + "&grant_type=refresh_token&scope=openid profile&refresh_token=" + refreshToken;
+            var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+            var xmlHttp = new XMLHttpRequest();
+            console.log("Retrieve user from:" + encodeURI(url));
+            xmlHttp.open("POST", encodeURI(url), false);
+            xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xmlHttp.send(params);
+            if (xmlHttp.responseText != "") {
+                try {
+                    response = JSON.parse(xmlHttp.responseText);
+                } catch (e) {}
+            }
+            if (response != "") {
+                fs.writeFileSync('/data/refresh_token', response.refresh_token);
+                try {
+                    response = JSON.parse(atob(response.access_token.split('.')[1]));
+                } catch (e) {
+                    console.log(e);
+                    return "";
+                }
+                if (response.preferred_username != "" && response.preferred_username != undefined && response.preferred_username != "undefined") {
+                    response = response.preferred_username;
+                } else {
+                    response = response.username;
+                }
+            }
+        }
+        return response
     },
 
     retrieveAccessToken: function (RED, node, authentication, uid) {
@@ -90,6 +123,8 @@ module.exports = {
     },
 
     retrieveAccessToken: function (RED, node, authentication, uid, fillStatus) {
+        var fs = require('fs');
+        var response = "";
         if (node != null && authentication != null) {
             node.s4cAuth = RED.nodes.getNode(authentication);
             if (node.s4cAuth != null) {
@@ -100,7 +135,7 @@ module.exports = {
                         shape: "dot",
                         text: "Authenticaton Ok"
                     });
-                    return accessToken;
+                    response = accessToken;
                 } else {
                     if (fillStatus) node.status({
                         fill: "red",
@@ -110,7 +145,27 @@ module.exports = {
                 }
             }
         }
-        return "";
+        if (fs.existsSync('/data/refresh_token') && response == "") {
+            var refreshToken = fs.readFileSync('/data/refresh_token', 'utf-8');
+            var url = (RED.settings.keycloakBaseUri ? RED.settings.keycloakBaseUri : "https://www.snap4city.org/auth/realms/master/") + "/protocol/openid-connect/token/";
+            var params = "client_id=" + (RED.settings.keycloakClientid ? RED.settings.keycloakClientid : "nodered") + "&client_secret=" + (RED.settings.keycloakClientsecret ? RED.settings.keycloakClientsecret : "943106ae-c62c-4961-85a2-849f6955d404") + "&grant_type=refresh_token&scope=openid profile&refresh_token=" + refreshToken;
+            var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+            var xmlHttp = new XMLHttpRequest();
+            //console.log("Retrieve token from:" + encodeURI(url));
+            xmlHttp.open("POST", encodeURI(url), false);
+            xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xmlHttp.send(params);
+            if (xmlHttp.responseText != "") {
+                try {
+                    response = JSON.parse(xmlHttp.responseText);
+                } catch (e) {}
+            }
+            if (response != "") {
+                fs.writeFileSync('/data/refresh_token', response.refresh_token);
+                response =  response.access_token;
+            }
+        }
+        return response;
     },
 
     retrieveAppID: function (RED) {
