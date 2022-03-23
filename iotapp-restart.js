@@ -28,7 +28,7 @@ module.exports = function (RED) {
             var accessToken = "";
             var idIOTApp = (msg.payload.id ? msg.payload.id : config.idIOTApp);
             node.s4cAuth = RED.nodes.getNode(config.authentication);
-            var uri = ( node.s4cAuth != null && node.s4cAuth.domain ? node.s4cAuth.domain : ( RED.settings.snap4cityApplicationApiUrl ? RED.settings.snap4cityApplicationApiUrl : "https://www.snap4city.org" )) + "/snap4city-application-api/v1";
+            var uri = ( (node.s4cAuth != null && node.s4cAuth.domain) ? node.s4cAuth.domain : ( RED.settings.snap4cityApplicationApiUrl ? RED.settings.snap4cityApplicationApiUrl : "https://www.snap4city.org" )) + "/snap4city-application-api/v1";
             const uid = s4cUtility.retrieveAppID(RED);
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             if (accessToken != "" && typeof accessToken != "undefined") {

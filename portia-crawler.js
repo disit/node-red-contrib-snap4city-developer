@@ -35,7 +35,7 @@ module.exports = function (RED) {
             var project = (msg.payload.project ? msg.payload.project : config.project);
             var spider = (msg.payload.spider ? msg.payload.spider : config.spider);
             node.s4cAuth = RED.nodes.getNode(config.authentication);
-            var uri = ( node.s4cAuth != null && node.s4cAuth.domain ? node.s4cAuth.domain : ( RED.settings.snap4cityApplicationApiUrl ? RED.settings.snap4cityApplicationApiUrl : "https://www.snap4city.org" )) + "/snap4city-application-api/v1";
+            var uri = ( (node.s4cAuth != null && node.s4cAuth.domain) ? node.s4cAuth.domain : ( RED.settings.snap4cityApplicationApiUrl ? RED.settings.snap4cityApplicationApiUrl : "https://www.snap4city.org" )) + "/snap4city-application-api/v1";
             var inPayload = msg.payload;
             var accessToken = "";
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);

@@ -45,10 +45,16 @@
             return this.name || "python-data-analytic";
         },
         oneditprepare: function () {
+            $("#node-input-currentNodeId").val(this.id);
             $.ajax({
                 url: "retrieveAccessTokenAuthenticationDev",
-                type: "GET",
+                type: "POST",
                 async: false,
+                dataType: "json",
+                data: {
+                    "authenticationNodeId": $("#node-input-authentication").val(),
+                    "nodeId": $("#node-input-currentNodeId").val()
+                },
                 success: function (_data) {
                     if (_data.accessToken == "") {
                         $("#inputNameContainer").hide();
@@ -76,8 +82,13 @@
                     var appId = "";
                     $.ajax({
                         url: "retrieveAccessTokenAuthenticationDev",
-                        type: "GET",
+                        type: "POST",
                         async: false,
+                        dataType: "json",
+                        data: {
+                            "authenticationNodeId": $("#node-input-authentication").val(),
+                            "nodeId": $("#node-input-currentNodeId").val()
+                        },
                         success: function (_data) {
                             if (_data.accessToken != "") {
                                 accessToken = _data.accessToken;
@@ -85,15 +96,15 @@
                             };
                         }
                     });
-                            
+
                     if (accessToken != "") {
                         var formData = new FormData();
                         formData.append("PY_file", $("#node-input-scriptpyfile")[0].files[0]);
                         $("#node-dialog-ok").hide();
                         $.ajax({
                             url: encodeURI(
-                                (RED.nodes.node($("#node-input-authentication").val()).domain? 
-                                RED.nodes.node($("#node-input-authentication").val()).domain :"https://www.snap4city.org") +
+                                (RED.nodes.node($("#node-input-authentication").val()).domain ?
+                                    RED.nodes.node($("#node-input-authentication").val()).domain : "https://www.snap4city.org") +
                                 "/snap4city-application-api/v1/?op=new_python&name=" +
                                 $("#node-input-name").val() + "&id=py" + RED.nodes.id().replace(
                                     ".",
@@ -146,6 +157,7 @@
 </script>
 
 <script type="text/x-red" data-template-name="python-data-analytic">
+    <input type="hidden" id="node-input-currentNodeId">
     <div class="form-row" id="rowAuthentication">
         <label for="node-input-authentication">Authentication</label>
         <input type="text" id="node-input-authentication">

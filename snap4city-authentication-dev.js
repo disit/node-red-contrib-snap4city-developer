@@ -156,17 +156,16 @@ module.exports = function (RED) {
             return response;
         }
 
-        RED.httpAdmin.post("/retrieveAccessTokenAuthenticationDev/", RED.auth.needsPermission('snap4city-authentication-dev.read'), function (req, res) {
-            var s4cUtility = require("./snap4city-utility.js");
-            res.json({
-                "accessToken": s4cUtility.retrieveAccessToken(RED, node, req.body.authenticationNodeId, null),
-                "username": s4cUtility.retrieveCurrentUser(RED, node, req.body.authenticationNodeId),
-                "appId": s4cUtility.retrieveAppID(RED),
-            });
-        });
-
-
     }
+
+    RED.httpAdmin.post("/retrieveAccessTokenAuthenticationDev/", RED.auth.needsPermission('snap4city-authentication-dev.read'), function (req, res) {
+        var s4cUtility = require("./snap4city-utility.js");
+        res.json({
+            "accessToken": s4cUtility.retrieveAccessToken(RED, RED.nodes.getNode(req.body.nodeId), req.body.authenticationNodeId, null),
+            "username": s4cUtility.retrieveCurrentUser(RED, RED.nodes.getNode(req.body.nodeId), req.body.authenticationNodeId),
+            "appId": s4cUtility.retrieveAppID(RED),
+        });
+    });
 
     RED.httpAdmin.get("/getAccessToken/", RED.auth.needsPermission('snap4city-authentication-dev.read'), function (req, res) {
         var s4cUtility = require("./snap4city-utility.js");

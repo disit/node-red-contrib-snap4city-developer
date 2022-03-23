@@ -37,7 +37,7 @@ module.exports = function (RED) {
             if (responseFromApi) {
                 var accessToken = "";
                 node.s4cAuth = RED.nodes.getNode(config.authentication);
-                var uri = (node.s4cAuth.domain ? node.s4cAuth.domain : (RED.settings.typicalTrendsUrl ? RED.settings.typicalTrendsUrl : (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://servicemap.km4city.org/"))) + "/ServiceMap/api/v1/values/typicaltrends";
+                var uri = ( (node.s4cAuth != null && node.s4cAuth.domain) ? node.s4cAuth.domain : (RED.settings.typicalTrendsUrl ? RED.settings.typicalTrendsUrl : (RED.settings.ascapiUrl ? RED.settings.ascapiUrl : "https://servicemap.km4city.org/"))) + "/ServiceMap/api/v1/values/typicaltrends";
                 accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
                 console.log("Url " + uri);
 				 
