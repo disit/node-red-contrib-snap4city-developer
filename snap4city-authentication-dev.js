@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-module.exports = function (RED) {
+   module.exports = function (RED) {
 
     function Snap4cityAuthenticationDev(config) {
         RED.nodes.createNode(this, config);
@@ -24,6 +24,7 @@ module.exports = function (RED) {
         node.isMainAccount = config.ismainaccount;
         var s4cUtility = require("./snap4city-utility.js");
         const logger = s4cUtility.getLogger(RED, node);
+        node.s4cAuth = this;
 
         this.setNewOwnership = function (accessToken, uid) {
             var os = require('os');
@@ -32,8 +33,8 @@ module.exports = function (RED) {
             logger.info("Try to set new ownership on " + node.domain);
             if (!fs.existsSync(__dirname + "/../node-red-contrib-snap4city-developer/config/ownership_" + node.domainLight) && !fs.existsSync(__dirname + "/../node-red-contrib-snap4city-user/config/ownership_" + node.domainLight) && !fs.existsSync(__dirname + "/../../../.snap4cityConfig/ownership_" + node.domainLight) && !fs.existsSync(homedir + ".snap4cityConfig/ownership_" + node.domainLight)) {
                 var ifaces = os.networkInterfaces();
-                var url = node.domain + "/ownership-api/v1/register/?";
-                var params = "accessToken=" + accessToken;
+                var url = s4cUtility.settingUrl(RED,node, "ownershipUrl", "https://www.snap4city.org", "/ownership-api/v1/") + "register/";
+                var params = "?accessToken=" + accessToken;
                 var iplocal = null;
                 Object.keys(ifaces).forEach(function (ifname) {
                     ifaces[ifname].forEach(function (iface) {
@@ -65,7 +66,7 @@ module.exports = function (RED) {
                 if (xmlHttp.responseText != "") {
                     try {
                         response = JSON.parse(xmlHttp.responseText)
-                        logger.info(xmlHttp.responseText);
+						//logger.info(xmlHttp.responseText);
                         if (typeof response.error == "undefined") {
                             if (fs.existsSync(__dirname + "/../node-red-contrib-snap4city-user")) {
                                 if (!fs.existsSync(__dirname + "/../node-red-contrib-snap4city-user/config")) {
@@ -105,16 +106,16 @@ module.exports = function (RED) {
         this.refreshTokenGetAccessToken = function (uid) {
             var s4cUtility = require("./snap4city-utility.js");
             const logger = s4cUtility.getLogger(RED, node);
-            var url = node.domain + "/auth/realms/master/protocol/openid-connect/token/";
+            var url = s4cUtility.settingUrl(RED,node, "keycloakBaseUri", "https://www.snap4city.org", "/auth/realms/master/") + "protocol/openid-connect/token/";
             logger.info(url);
             var params = "";
             var expiresTimestamp = node.credentials.expiresTimestamp;
             var refreshToken = node.credentials.refreshToken;
             console.log("Refresh Token: " + refreshToken);
             if (typeof refreshToken == "undefined" || typeof expiresTimestamp == "undefined" || new Date().getTime() > expiresTimestamp) {
-                params = "client_id=nodered-iotedge&grant_type=password&username=" + node.credentials.user + "&password=" + encodeURIComponent(node.credentials.password);
+                params = "client_id=" + (RED.settings.keycloakClientid ? RED.settings.keycloakClientid : "nodered-iotedge") + "&grant_type=password&username=" + node.credentials.user + "&password=" + encodeURIComponent(node.credentials.password);
             } else {
-                params = "client_id=nodered-iotedge&grant_type=refresh_token&scope=openid profile&refresh_token=" + refreshToken;
+                params = "client_id=" + (RED.settings.keycloakClientid ? RED.settings.keycloakClientid : "nodered-iotedge") + "&grant_type=refresh_token&scope=openid profile&refresh_token=" + refreshToken;
             }
             var response = "";
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -123,10 +124,11 @@ module.exports = function (RED) {
             xmlHttp.open("POST", encodeURI(url), false);
             xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xmlHttp.send(params);
-            logger.info(xmlHttp.responseText);
+            //logger.info(xmlHttp.responseText);
             if (xmlHttp.responseText != "") {
                 try {
                     response = JSON.parse(xmlHttp.responseText);
+                    logger.info("ResponseText: " + xmlHttp.responseText + " status: " + xmlHttp.status);
                     if (response.access_token != null && uid != null) {
                         if (typeof expiresTimestamp == "undefined") {
                             if (node.isMainAccount) {

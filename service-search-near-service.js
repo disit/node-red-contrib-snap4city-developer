@@ -28,6 +28,7 @@ module.exports = function (RED) {
             var categories = (msg.payload.categories ? msg.payload.categories : config.categories);
             var maxDists = (msg.payload.maxdistance ? msg.payload.maxdistance : config.maxdists);
             var maxResults = (msg.payload.maxresults ? msg.payload.maxresults : config.maxresults);
+            var model = (msg.payload.model ? msg.payload.model : config.model);
             var language = (msg.payload.lang ? msg.payload.lang : config.lang);
             var geometry = (msg.payload.geometry ? msg.payload.geometry : config.geometry);
             const uid = s4cUtility.retrieveAppID(RED);
@@ -36,8 +37,8 @@ module.exports = function (RED) {
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            logger.info(encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
-            xmlHttp.open("GET", encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), true); // false for synchronous request
+            logger.info(encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"));
+            xmlHttp.open("GET", encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"), true); // false for synchronous request
             if (typeof accessToken != "undefined" && accessToken != "") {
                 xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
             } else {
