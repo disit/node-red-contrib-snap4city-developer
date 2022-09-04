@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-snap4city-developer",
-    "version": "0.5.7",
+    "version": "0.5.9",
     "dependencies": {
         "atob": "^2.1.2",
         "express": "^4.17.1",
@@ -21,7 +21,11 @@
     ],
     "license": "AGPL-3.0-or-later",
     "homepage": "https://github.com/disit/node-red-contrib-snap4city-developer",
+	"bugs": {
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSfDQtKqgLIIyycNXiazeYEh1SsRG1YL8Ze4ThD8nZoA5jsoXw/viewform"
+	},
     "node-red": {
+		"version": ">=0.17.0",
         "nodes": {
             "service-search": "service-search.js",
             "service-search-near-gps-position": "service-search-near-gps-position.js",
