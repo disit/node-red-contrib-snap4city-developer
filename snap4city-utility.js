@@ -155,16 +155,20 @@ module.exports = {
             xmlHttp.open("POST", encodeURI(url), false);
             xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xmlHttp.send(params);
-            if (xmlHttp.responseText != "") {
-                try {
-                    response = JSON.parse(xmlHttp.responseText);
-                } catch (e) {}
-            }
-            if (response != "") {
-                fs.writeFileSync('/data/refresh_token', response.refresh_token);
-                response =  response.access_token;
-            }
-        }
+			if(xmlHttp.status!=200) {
+				console.log("FAILED " +url+"\n"+params+"\n\n"+xmlHttp.responseText);
+			} else {
+				if (xmlHttp.responseText != "") {
+					try {
+						response = JSON.parse(xmlHttp.responseText);
+					} catch (e) {}
+				}
+				if (response != "") {
+					fs.writeFileSync('/data/refresh_token', response.refresh_token);
+					response =  response.access_token;
+				}
+			}
+		}
         return response;
     },
 

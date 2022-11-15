@@ -35,6 +35,18 @@
                 required: false,
                 validate: RED.validators.number()
             },
+			filter: {
+                value: "",
+                required: false
+            },
+			values: {
+                value: "",
+                required: false
+            },
+			sortOnValue: {
+                value: "",
+                required: false
+            },
             categories: {
                 value: "",
                 required: false
@@ -94,7 +106,18 @@
         <label for="node-input-longitude">Longitude</label>
         <input type="text" autocomplete="off" id="node-input-longitude" placeholder="Longitude">
     </div>
-
+	<div class="form-row">
+        <label for="node-input-filter">Filter</label>
+        <input type="text" autocomplete="off" id="node-input-filter" placeholder="Filter">
+    </div>
+	<div class="form-row">
+        <label for="node-input-values">Values</label>
+        <input type="text" autocomplete="off" id="node-input-values" placeholder="Values">
+    </div>
+	<div class="form-row">
+        <label for="node-input-sortOnValue">SortOnValue</label>
+        <input type="text" autocomplete="off" id="node-input-sortOnValue" placeholder="SortOnValue">
+    </div>
     <div class="form-row">
         <label for="node-input-categories">Categories</label>
         <input type="text" autocomplete="off" id="node-input-categories" placeholder="Categories">
@@ -129,7 +152,7 @@
 
 <script type="text/x-red" data-help-name="service-search-near-gps-position">
     <p>It allows to retrieve the set of services that are near a given GPS position. The services can be filtered as belonging
-        to specific categories (e.g. Accommodation, Hotel, Restaurant etc). It can also be used to find services that have
+        to specific categories (e.g. Accommodation, Hotel, Restaurant etc), values or model. It can also be used to find services that have
         a WKT spatial description that contains a specific GPS position.</p>
 
     <h3>Inputs</h3>
@@ -144,13 +167,42 @@
             <span class="property-type">number</span>
         </dt>
         <dd> longitude of a GPS position</dd>
+		<dt>filter
+            <span class="property-type">string</span>
+        </dt>
+        <dd> a list of conditions (separated with ;) on value names matching a constant value. The matching operator can be:
+            <ul>
+			<li><em>value name</em>:<em>string value</em> (e.g status:Active), search for devices having the dynamic string attribute "value name" with a specific value, the match is case sensitive</li>
+			<li><em>value name</em>=<em>numeric value</em> (e.g. temperature=18), search for devices having the dynamic numeric attribute "value name" with a specific numeric value.</li>
+			<li><em>value name</em>&gt;<em>numeric value</em> (e.g. temperature&gt;20), search for devices having a dynamic numeric attribute greater than a specific value.</li>
+			<li><em>value name</em>&gt;=<em>numeric value</em> (e.g. temperature&gt;20), search for devices having a dynamic numeric attribute greater or equal than a specific value.</li>
+			<li><em>value name</em>&lt;<em>numeric value</em> (e.g. temperature&lt;20), search for devices having a dynamic numeric attribute less than a specific value.</li>
+			<li><em>value name</em>&lt;=<em>numeric value</em> (e.g. temperature&lt;=20), search for devices having a dynamic numeric attribute less or equal than a specific value.</li>
+			</ul>
+		If multiple conditions are present they are considered in AND.
+		<dt>values
+            <span class="property-type">string</span>
+        </dt>
+        <dd> If filter is not empty, list of value names (separated by ;) to be returned for each result, if omitted all values are returned.</dd>
+        <dt>sortOnValue
+            <span class="property-type">string</span>
+        </dt>
+        <dd> If filter is not empty, the value name to sort the result, it can be like "value name:asc|desc:type" (e.g. temperature:desc:short), order direction 
+		is "asc" if omitted, type can be string, date, long or short (if type is omitted string is assumed). The type is used to force sorting 
+		for dates and numbers. If the parameter is omitted the sort is on the distance from GPS position, if "none" is specified no specific 
+		sort is used.</dd>
         <dt>categories
             <span class="property-type">string</span>
         </dt>
-        <dd> the list of categories of the services to be retrieved separated with semicolon, if omitted all kinds of services
+		<dd> the list of categories of the services to be retrieved separated with semicolon, if omitted all kinds of services
             are returned. It can contain macro categories or categories, if a macro category is specified all categories
             in the macro category are used. The complete list of categories and macro categories can be retrieved on servicemap.disit.org</dd>
-        <dt>maxdistance
+        <dt>model
+            <span class="property-type">string</span>
+        </dt>
+        <dd> search for iot devices created with a specific model name.</dd>	
+		
+		<dt>maxdistance
             <span class="property-type">number</span>
         </dt>
         <dd> maximum distance from the GPS position of the services to be retrieved, expressed in Km (0.1 is used if parameter

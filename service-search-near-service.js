@@ -28,7 +28,11 @@ module.exports = function (RED) {
             var categories = (msg.payload.categories ? msg.payload.categories : config.categories);
             var maxDists = (msg.payload.maxdistance ? msg.payload.maxdistance : config.maxdists);
             var maxResults = (msg.payload.maxresults ? msg.payload.maxresults : config.maxresults);
-            var model = (msg.payload.model ? msg.payload.model : config.model);
+            var filter = (msg.payload.filter ? msg.payload.filter : config.filter);
+			var sortOnValue = (msg.payload.sortOnValue ? msg.payload.sortOnValue : config.sortOnValue);
+			var values = (msg.payload.values ? msg.payload.values : config.values);
+            
+			var model = (msg.payload.model ? msg.payload.model : config.model);
             var language = (msg.payload.lang ? msg.payload.lang : config.lang);
             var geometry = (msg.payload.geometry ? msg.payload.geometry : config.geometry);
             const uid = s4cUtility.retrieveAppID(RED);
@@ -38,8 +42,27 @@ module.exports = function (RED) {
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
             logger.info(encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"));
-            xmlHttp.open("GET", encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"), true); // false for synchronous request
-            if (typeof accessToken != "undefined" && accessToken != "") {
+            //xmlHttp.open("GET", encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"), true); // false for synchronous request
+            
+			
+			if (typeof filter != "undefined" && filter != "") {
+
+                logger.info(encodeURI(uri + "iot-search/?selection=" + serviceuri + "&valueFilters="+filter+"&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists +  "&lang=" + language + "&geometry=" + geometry + (typeof sortOnValue != "undefined" && sortOnValue != "" ? "&sortOnValue=" + sortOnValue : "")+ (typeof values != "undefined" && values != "" ? "&values=" + values : "")+(typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"));
+				xmlHttp.open("GET", encodeURI(uri + "iot-search/?selection=" + serviceuri + "&valueFilters="+filter+"&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists +  "&lang=" + language + "&geometry=" + geometry + (typeof sortOnValue != "undefined" && sortOnValue != "" ? "&sortOnValue=" + sortOnValue : "")+ (typeof values != "undefined" && values != "" ? "&values=" + values : "")+(typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"), true); // false for synchronous request		
+			} else {
+
+				logger.info(encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") + "&appID=iotapp"));
+				xmlHttp.open("GET", encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") + "&appID=iotapp"), true); // false for synchronous request
+            }
+			
+			
+			
+			
+			
+			
+			
+			
+			if (typeof accessToken != "undefined" && accessToken != "") {
                 xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
             } else {
                 logger.debug("Call without accessToken");
@@ -63,16 +86,26 @@ module.exports = function (RED) {
                                     "features": []
                                 }
                             }
-                            for (var category in response) {
-                                for (var i = 0; i < response[category].features.length; i++) {
-                                    serviceUriArray.push(response[category].features[i].properties.serviceUri);
-                                }
+							if (typeof filter != "undefined" && filter != "") {
+								for (var i = 0; i < response.features.length; i++) {
+									serviceUriArray.push(response.features[i].properties.serviceUri);
+								}
 
-                                if (response[category].features.length != 0) {
-                                    completeFeatures["Results"].features = completeFeatures["Results"].features.concat(response[category].features);
+								if (response.features.length != 0) {
+									completeFeatures["Results"].features = completeFeatures["Results"].features.concat(response.features);
+								}
+							}else{
+								for (var category in response) {
+									for (var i = 0; i < response[category].features.length; i++) {
+										serviceUriArray.push(response[category].features[i].properties.serviceUri);
+									}
 
-                                }
-                            }
+									if (response[category].features.length != 0) {
+										completeFeatures["Results"].features = completeFeatures["Results"].features.concat(response[category].features);
+
+									}
+								}
+							}
                             msgs[0].payload = serviceUriArray;
                             msgs[1].payload = response;
                             msgs[2].payload = completeFeatures;

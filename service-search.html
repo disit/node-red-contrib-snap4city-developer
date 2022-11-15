@@ -29,6 +29,18 @@
                 value: "",
                 required: false
             },
+			filter: {
+                value: "",
+                required: false
+            },
+			values: {
+                value: "",
+                required: false
+            },
+			sortOnValue: {
+                value: "",
+                required: false
+            },
             maxresults: {
                 value: 100,
                 required: false,
@@ -84,6 +96,18 @@
         <label for="node-input-selection">Selection</label>
         <input type="text" autocomplete="off" id="node-input-selection" placeholder="Selection">
     </div>
+	<div class="form-row">
+        <label for="node-input-filter">Filter</label>
+        <input type="text" autocomplete="off" id="node-input-filter" placeholder="Filter">
+    </div>
+	<div class="form-row">
+        <label for="node-input-values">Values</label>
+        <input type="text" autocomplete="off" id="node-input-values" placeholder="Values">
+    </div>
+	<div class="form-row">
+        <label for="node-input-sortOnValue">SortOnValue</label>
+        <input type="text" autocomplete="off" id="node-input-sortOnValue" placeholder="SortOnValue">
+    </div>
     <div class="form-row">
         <label for="node-input-categories">Categories</label>
         <input type="text" autocomplete="off" id="node-input-categories" placeholder="Categories">
@@ -118,7 +142,7 @@
 
 <script type="text/x-red" data-help-name="service-search">
     <p>It allows to retrieve the set of services that are near a given GPS position. The services can be filtered as belonging
-        to specific categories (e.g. Accommodation, Hotel, Restaurant etc). It can also be used to find services that have
+        to specific categories (e.g. Accommodation, Hotel, Restaurant etc), model or values. It can also be used to find services that have
         a WKT spatial description that contains a specific GPS position.</p>
 
     <h3>Inputs</h3>
@@ -130,22 +154,51 @@
         </dt>
         <dd> “ &lt;lat>; &lt;lng>” with a GPS position or “ &lt;lat1>; &lt;lng1>; &lt;lat2>; &lt;lng2>” for a rectangular area
             or “wkt: &lt;WKT_string>” or “geo: &lt;geoid>” for a geographic area described as Well Known Text</dd>
-        <dt>categories
+        
+		<dt>filter
+            <span class="property-type">string</span>
+        </dt>
+        <dd> a list of conditions (separated with ;) on value names matching a constant value. The matching operator can be:
+            <ul>
+			<li><em>value name</em>:<em>string value</em> (e.g status:Active), search for devices having the dynamic string attribute "value name" with a specific value, the match is case sensitive</li>
+			<li><em>value name</em>=<em>numeric value</em> (e.g. temperature=18), search for devices having the dynamic numeric attribute "value name" with a specific numeric value.</li>
+			<li><em>value name</em>&gt;<em>numeric value</em> (e.g. temperature&gt;20), search for devices having a dynamic numeric attribute greater than a specific value.</li>
+			<li><em>value name</em>&gt;=<em>numeric value</em> (e.g. temperature&gt;20), search for devices having a dynamic numeric attribute greater or equal than a specific value.</li>
+			<li><em>value name</em>&lt;<em>numeric value</em> (e.g. temperature&lt;20), search for devices having a dynamic numeric attribute less than a specific value.</li>
+			<li><em>value name</em>&lt;=<em>numeric value</em> (e.g. temperature&lt;=20), search for devices having a dynamic numeric attribute less or equal than a specific value.</li>
+			</ul>
+		If multiple conditions are present they are considered in AND.
+		<dt>values
+            <span class="property-type">string</span>
+        </dt>
+        <dd> If filter is not empty, list of value names (separated by ;) to be returned for each result, if omitted all values are returned.</dd>
+        <dt>sortOnValue
+            <span class="property-type">string</span>
+        </dt>
+        <dd> If filter is not empty, the value name to sort the result, it can be like "value name:asc|desc:type" (e.g. temperature:desc:short), order direction 
+		is "asc" if omitted, type can be string, date, long or short (if type is omitted string is assumed). The type is used to force sorting 
+		for dates and numbers. If the parameter is omitted the sort is on the distance from GPS position, if "none" is specified no specific 
+		sort is used.</dd>
+		<dt>categories
             <span class="property-type">string</span>
         </dt>
         <dd> the list of categories of the services to be retrieved separated with semicolon, if omitted all kinds of services
             are returned. It can contain macro categories or categories, if a macro category is specified all categories
             in the macro category are used. The complete list of categories and macro categories can be retrieved on servicemap.disit.org</dd>
+		<dt>model
+            <span class="property-type">string</span>
+        </dt>
+        <dd> search for iot devices created with a specific model name.</dd>	
+		<dt>maxresults
+            <span class="property-type">number</span>
+        </dt>
+        <dd> maximum number of results to be returned (if parameter is missing 100 is assumed), if it is 0 all results are returned</dd>	
         <dt>maxdistance
             <span class="property-type">number</span>
         </dt>
         <dd> maximum distance from the GPS position of the services to be retrieved, expressed in Km (0.1 is used if parameter
             is missing) if it is equal to “inside” it searches for services with a WKT geometry that contains the specified
             GPS position (e.g a park)</dd>
-        <dt>maxresults
-            <span class="property-type">number</span>
-        </dt>
-        <dd> maximum number of results to be returned (if parameter is missing 100 is assumed), if it is 0 all results are returned</dd>
         <dt>lang
             <span class="property-type">string</span>
         </dt>
@@ -163,7 +216,8 @@
     <dl class="message-properties">
         <dd> It returns the services split in three sections (BusStops , SensorSites, Services). Each section is provided as GeoJSON
             “FeatureCollection”, the results are sorted by distance, additionally in each section the “fullCount” property
-            reports the full number of results available matching the query</dd>
+            reports the full number of results available matching the query. The results can be filtered to be within within a range of values 
+			specified in the filter field.</dd>
     </dl>
 
     <h3>Details</h3>

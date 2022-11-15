@@ -24,6 +24,9 @@ module.exports = function (RED) {
             node.s4cAuth = RED.nodes.getNode(config.authentication);
             var uri = s4cUtility.settingUrl(RED,node, "ascapiUrl", "https://www.snap4city.org", "/superservicemap/api/v1/");
             var selection = (msg.payload.selection ? msg.payload.selection : config.selection);
+			var filter = (msg.payload.filter ? msg.payload.filter : config.filter);
+			var sortOnValue = (msg.payload.sortOnValue ? msg.payload.sortOnValue : config.sortOnValue);
+			var values = (msg.payload.values ? msg.payload.values : config.values);
             var categories = (msg.payload.categories ? msg.payload.categories : config.categories);
             var maxDists = (msg.payload.maxdistance ? msg.payload.maxdistance : config.maxdists);
             var maxResults = (msg.payload.maxresults ? msg.payload.maxresults : config.maxresults);
@@ -36,9 +39,14 @@ module.exports = function (RED) {
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            logger.info(encodeURI(uri + "/?selection=" + selection + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") + "&appID=iotapp"));
-            xmlHttp.open("GET", encodeURI(uri + "/?selection=" + selection + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"), true); // false for synchronous request
-            if (typeof accessToken != "undefined" && accessToken != "") {
+            if (typeof filter != "undefined" && filter != "") {
+                logger.info(encodeURI(uri + "iot-search/?selection=" + selection + "&valueFilters="+filter+"&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists +  "&lang=" + language + "&geometry=" + geometry + (typeof sortOnValue != "undefined" && sortOnValue != "" ? "&sortOnValue=" + sortOnValue : "")+ (typeof values != "undefined" && values != "" ? "&values=" + values : "")+(typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"));
+				xmlHttp.open("GET", encodeURI(uri + "iot-search/?selection=" + selection + "&valueFilters="+filter+"&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists +  "&lang=" + language + "&geometry=" + geometry + (typeof sortOnValue != "undefined" && sortOnValue != "" ? "&sortOnValue=" + sortOnValue : "")+ (typeof values != "undefined" && values != "" ? "&values=" + values : "")+(typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"), true); // false for synchronous request
+            } else {
+				logger.info(encodeURI(uri + "/?selection=" + selection + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"));
+				xmlHttp.open("GET", encodeURI(uri + "/?selection=" + selection + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"), true); // false for synchronous request
+            }
+			if (typeof accessToken != "undefined" && accessToken != "") {
                 xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
             } else {
                 logger.debug("Call without accessToken");
