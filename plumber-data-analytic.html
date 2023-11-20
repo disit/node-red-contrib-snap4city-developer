@@ -103,10 +103,11 @@
                         var formData = new FormData();
                         formData.append("R_file", $("#node-input-scriptrfile")[0].files[0]);
                         $("#node-dialog-ok").hide();
+						var auth_node = RED.nodes.node($("#node-input-authentication").val());
                         $.ajax({
                             url: encodeURI(
-                                (RED.nodes.node($("#node-input-authentication").val()).domain ?
-                                    RED.nodes.node($("#node-input-authentication").val()).domain : "https://www.snap4city.org") +
+                                (auth_node && auth_node.domain ?
+                                    auth_node.domain : "https://www.snap4city.org") +
                                 "/snap4city-application-api/v1/?op=new_plumber&name=" +
                                 $("#node-input-name").val() + "&id=pl" + RED.nodes.id().replace(
                                     ".",

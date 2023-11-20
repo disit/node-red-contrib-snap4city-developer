@@ -31,21 +31,18 @@ module.exports = function (RED) {
             var filter = (msg.payload.filter ? msg.payload.filter : config.filter);
 			var sortOnValue = (msg.payload.sortOnValue ? msg.payload.sortOnValue : config.sortOnValue);
 			var values = (msg.payload.values ? msg.payload.values : config.values);
-            
-			var model = (msg.payload.model ? msg.payload.model : config.model);
+            var model = (msg.payload.model ? msg.payload.model : config.model);
             var language = (msg.payload.lang ? msg.payload.lang : config.lang);
             var geometry = (msg.payload.geometry ? msg.payload.geometry : config.geometry);
+			var typeQuery = (msg.payload.typeQuery ? msg.payload.typeQuery : config.typeQuery);
             const uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
             var accessToken = "";
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            logger.info(encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"));
-            //xmlHttp.open("GET", encodeURI(uri + "/?selection=" + serviceuri + "&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists + "&format=json&fullCount=false" + "&lang=" + language + "&geometry=" + geometry + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"), true); // false for synchronous request
-            
-			
-			if (typeof filter != "undefined" && filter != "") {
+           
+		   if (typeQuery == "entity") {
 
                 logger.info(encodeURI(uri + "iot-search/?selection=" + serviceuri + "&valueFilters="+filter+"&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists +  "&lang=" + language + "&geometry=" + geometry + (typeof sortOnValue != "undefined" && sortOnValue != "" ? "&sortOnValue=" + sortOnValue : "")+ (typeof values != "undefined" && values != "" ? "&values=" + values : "")+(typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"));
 				xmlHttp.open("GET", encodeURI(uri + "iot-search/?selection=" + serviceuri + "&valueFilters="+filter+"&categories=" + categories + "&maxResults=" + maxResults + "&maxDists=" + maxDists +  "&lang=" + language + "&geometry=" + geometry + (typeof sortOnValue != "undefined" && sortOnValue != "" ? "&sortOnValue=" + sortOnValue : "")+ (typeof values != "undefined" && values != "" ? "&values=" + values : "")+(typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + (typeof model != "undefined" && model != "" ? "&model=" + model : "") +"&appID=iotapp"), true); // false for synchronous request		
@@ -86,7 +83,7 @@ module.exports = function (RED) {
                                     "features": []
                                 }
                             }
-							if (typeof filter != "undefined" && filter != "") {
+							if (typeQuery == "entity") {
 								for (var i = 0; i < response.features.length; i++) {
 									serviceUriArray.push(response.features[i].properties.serviceUri);
 								}

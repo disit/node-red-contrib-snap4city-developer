@@ -14,6 +14,13 @@
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */-->
 <script type="text/javascript">
+
+    $.ajax({
+        url: "s4c/js/jquery.fancytree-all.min.js",
+        async: false,
+        dataType: "script"
+    });
+	
     RED.nodes.registerType('service-search', {
         category: 'S4CSearchDev',
         color: '#E9967A',
@@ -67,6 +74,10 @@
                 value: "",
                 required: false
             },
+			typeQuery: {
+                value: "point-of-interest",
+                required: false
+            },
         },
         outputs: 1,
         inputs: 1,
@@ -74,8 +85,27 @@
         icon: "marker.png",
         label: function () {
             return this.name || "service-search";
-        }
-    });
+        },
+		oneditprepare: function () {
+			changeSelection();
+		}
+	});
+
+	var changeSelection = function () {
+		$("#node-input-typeQuery").change(function () {
+			var newValue = $(this).val();
+			if (newValue === "entity") {
+				$("#node-input-filter").prop("disabled", false);
+				$("#node-input-values").prop("disabled", false);
+				$("#node-input-sortOnValue").prop("disabled", false);
+			} else if (newValue === "point-of-interest") {
+				$("#node-input-filter").prop("disabled", true);
+				$("#node-input-values").prop("disabled", true);
+				$("#node-input-sortOnValue").prop("disabled", true);
+			}
+		});
+	};
+
 </script>
 
 <script type="text/x-red" data-template-name="service-search">
@@ -88,6 +118,17 @@
         <a href="https://www.snap4city.org"
             target="_blank">here</a>.
     </div>
+	
+	<div class="form-row">
+        <label for="node-input-typeQuery">Type Query:</label>
+        <select id="node-input-typeQuery">
+			<option value="point-of-interest" selected>point-of-interest</option>
+            <option value="entity">entity</option>
+            
+        </select>
+    </div>
+	
+	
     <div class="form-row">
         <label for="node-input-name">Name</label>
         <input type="text" autocomplete="off" id="node-input-name" placeholder="Name">
@@ -98,15 +139,15 @@
     </div>
 	<div class="form-row">
         <label for="node-input-filter">Filter</label>
-        <input type="text" autocomplete="off" id="node-input-filter" placeholder="Filter">
+        <input type="text" autocomplete="off" id="node-input-filter" placeholder="Filter" disabled>
     </div>
 	<div class="form-row">
         <label for="node-input-values">Values</label>
-        <input type="text" autocomplete="off" id="node-input-values" placeholder="Values">
+        <input type="text" autocomplete="off" id="node-input-values" placeholder="Values" disabled>
     </div>
 	<div class="form-row">
         <label for="node-input-sortOnValue">SortOnValue</label>
-        <input type="text" autocomplete="off" id="node-input-sortOnValue" placeholder="SortOnValue">
+        <input type="text" autocomplete="off" id="node-input-sortOnValue" placeholder="SortOnValue" disabled>
     </div>
     <div class="form-row">
         <label for="node-input-categories">Categories</label>
@@ -149,6 +190,10 @@
     A JSON with these parameters:
 
     <dl class="message-properties">
+		 <dt>typeQuery
+				<span class="property-type">string</span>
+			</dt>
+			<dd> If "point-of-interest" is selected, the system will perform a search of the data contained in the Knowledge Base (KB) if, on the other hand, the user selects "entity," the system will perform a search using iot-search.</dd>
         <dt>selection
             <span class="property-type">string</span>
         </dt>
@@ -158,7 +203,7 @@
 		<dt>filter
             <span class="property-type">string</span>
         </dt>
-        <dd> a list of conditions (separated with ;) on value names matching a constant value. The matching operator can be:
+        <dd>Only for the type "entity", a list of conditions (separated with ;) on value names matching a constant value. The matching operator can be:
             <ul>
 			<li><em>value name</em>:<em>string value</em> (e.g status:Active), search for devices having the dynamic string attribute "value name" with a specific value, the match is case sensitive</li>
 			<li><em>value name</em>=<em>numeric value</em> (e.g. temperature=18), search for devices having the dynamic numeric attribute "value name" with a specific numeric value.</li>
@@ -171,11 +216,11 @@
 		<dt>values
             <span class="property-type">string</span>
         </dt>
-        <dd> If filter is not empty, list of value names (separated by ;) to be returned for each result, if omitted all values are returned.</dd>
+        <dd>Only for the type "entity", If filter is not empty, list of value names (separated by ;) to be returned for each result, if omitted all values are returned.</dd>
         <dt>sortOnValue
             <span class="property-type">string</span>
         </dt>
-        <dd> If filter is not empty, the value name to sort the result, it can be like "value name:asc|desc:type" (e.g. temperature:desc:short), order direction 
+        <dd>Only for the type "entity", If filter is not empty, the value name to sort the result, it can be like "value name:asc|desc:type" (e.g. temperature:desc:short), order direction 
 		is "asc" if omitted, type can be string, date, long or short (if type is omitted string is assumed). The type is used to force sorting 
 		for dates and numbers. If the parameter is omitted the sort is on the distance from GPS position, if "none" is specified no specific 
 		sort is used.</dd>

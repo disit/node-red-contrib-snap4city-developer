@@ -1,0 +1,141 @@
+<!--/* NODE-RED-CONTRIB-SNAP4CITY-USER
+   Copyright (C) 2018 DISIT Lab http://www.disit.org - University of Florence
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */-->
+<script type="text/javascript">
+    RED.nodes.registerType('delete-device', {
+        category: 'S4CIoT',
+        color: '#a6bbcf',
+        defaults: {
+            name: {
+                value: ""
+            },
+            authentication: {
+                type: "snap4city-authentication",
+                required: false
+            }
+        },
+        outputs: 1,
+        inputs: 1,
+        icon: "white-globe.png",
+        label: function () {
+            return this.name || "delete-device";
+        },
+        oneditprepare: function () {
+            $("#node-input-currentNodeId").val(this.id);
+            $("#node-input-deviceId").val("");
+            var accessToken = "";
+            var deviceDataList = "";
+
+            $.ajax({
+                url: "retrieveAccessTokenAuthentication",
+                type: "POST",
+                async: false,
+                dataType: "json",
+                data: {
+                    "authenticationNodeId": $("#node-input-authentication").val(),
+                    "nodeId": $("#node-input-currentNodeId").val()
+                },
+                success: function (_data) {
+                    if (_data.accessToken == "") {
+                        $("#selectDeviceDataContainer").hide();
+                        $('#tipAuthenticationWrong').show();
+                        $('#tipAuthentication').hide();
+                    } else {
+                        accessToken = _data.accessToken;
+                    };
+                }
+            });
+
+            refreshDeviceDataSelection(accessToken, deviceDataList);
+        },
+        oneditsave: function () {
+        }
+    });
+
+    var refreshDeviceDataSelection = function (accessToken, deviceDataList) {
+        $("#node-input-deviceId").empty();
+        if (deviceDataList != "") {
+            createDeviceDataSelection(deviceDataList);
+        } else if (accessToken != "" && deviceDataList == "") {
+            $.ajax({
+                url: "ownershipUrl",
+                type: "GET",
+                async: false,
+                success: function (_data) {
+                    var domain = (RED.nodes.node($("#node-input-authentication").val()) != null ? RED.nodes.node($("#node-input-authentication").val()).domain : "");
+                    if (domain != "") {
+                        _data.ownershipUrl = domain + "/ownership-api/";
+                    }
+                    $.ajax({
+                        url: _data.ownershipUrl +
+                            "v1/list/?type=IOTID&accessToken=" +
+                            accessToken,
+                        type: "GET",
+                        async: true,
+                        dataType: "json",
+                        success: function (_data) {
+                            createDeviceDataSelection(_data);
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    });
+                }
+            });
+        }
+
+    }
+
+    </script>
+
+<script type="text/x-red" data-template-name="delete-device">
+    <div class="form-row" id="rowAuthentication">
+        <label for="node-input-authentication">Authentication</label>
+        <input type="text" id="node-input-authentication">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="delete-device">
+    <p>It allows to delete a device.</p>
+
+    <h3>Inputs</h3>
+    A JSON with these parameters:
+
+    <dl class="message-properties">
+        <dt>id
+            <span class="property-type">string</span>
+        </dt>
+        <dd> the name of the device (you MUST have the ownership of the device or root account)</dd>
+		<dt>contextbroker
+            <span class="property-type">string</span>
+        </dt>
+        <dd> the contextbrokerof the device</dd>
+    <p>An example of the JSON array filled with correct data:</p>
+    <pre>
+{
+    "id": "nameDevice",
+    "contextbroker": "NAME_BROKER"
+}
+    </pre>
+
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dd> Returns an object containing the result of the delete</dd>
+    </dl>
+
+    <h3>Details</h3>
+    <p>Parameters should be passed in msg.payload</p>
+
+</script>

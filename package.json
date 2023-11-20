@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-snap4city-developer",
-    "version": "0.5.12",
+    "version": "0.5.16",
     "dependencies": {
         "atob": "^2.1.2",
         "express": "^4.17.1",
@@ -96,6 +96,7 @@
             "portia-crawler": "portia-crawler.js",
             "iotapp-restart": "iotapp-restart.js",
             "iotapp-upgrade": "iotapp-upgrade.js",
+			"iotdirectory-delete-device": "iotdirectory-delete-device.js",
             "ownership": "ownership.js",
             "om-get-processes": "om-get-processes.js",
             "om-get-teams": "om-get-teams.js",
