@@ -1,0 +1,274 @@
+<!--/* NODE-RED-CONTRIB-SNAP4CITY-USER
+   Copyright (C) 2018 DISIT Lab http://www.disit.org - University of Florence
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */-->
+<script type="text/javascript">
+    RED.nodes.registerType('group-insert-entity', {
+        category: 'S4CGroup',
+        color: '#a6bbcf',
+        defaults: {
+            name: {
+                value: ""
+            },
+            deviceId: {
+                value: ""
+            },
+            deviceDataList: {
+                value: "{}"
+            },
+            selectedDeviceDataId: {
+                value: ""
+            },
+			
+			groupId: {
+                value: ""
+            },
+            groupDataList: {
+                value: "{}"
+            },
+            selectedGroupDataId: {
+                value: ""
+            },
+			
+			
+			
+            
+            authentication: {
+                type: "snap4city-authentication",
+                required: false
+            }
+        },
+        outputs: 1,
+        inputs: 1,
+        icon: "white-globe.png",
+        label: function () {
+            return this.name || "group-insert-entity";
+        },
+        oneditprepare: function () {
+            $("#node-input-currentNodeId").val(this.id);
+            $("#node-input-deviceId").val("");
+			$("#node-input-groupId").val("");
+            var accessToken = "";
+            var deviceDataList = "";
+			var groupDataList = "";
+            $.ajax({
+                url: "retrieveAccessTokenAuthenticationDev",
+                type: "POST",
+                async: false,
+                dataType: "json",
+                data: {
+                    "authenticationNodeId": $("#node-input-authentication").val(),
+                    "nodeId": $("#node-input-currentNodeId").val()
+                },
+                success: function (_data) {
+                    if (_data.accessToken == "") {
+                        $("#selectDeviceDataContainer").hide();
+                        $('#tipAuthenticationWrong').show();
+                        $('#tipAuthentication').hide();
+                    } else {
+                        accessToken = _data.accessToken;
+                    };
+                }
+            });
+			refreshDeviceDataSelectionDevice(accessToken, deviceDataList)
+            refreshDeviceDataSelectionGroup(accessToken, groupDataList);
+        },
+        oneditsave: function () {
+            $("#node-input-selectedDeviceDataId").val($("#node-input-deviceId").val());
+			$("#node-input-selectedGroupDataId").val($("#node-input-groupId").val());
+            $("#node-input-name").val("Insert entity in my group");
+        }
+    });
+
+    var refreshDeviceDataSelectionDevice = function (accessToken, deviceDataList) {
+        $("#node-input-deviceId").empty();
+        if (deviceDataList != "") {
+            createDeviceDataSelection(deviceDataList);
+		} else if (accessToken != "" && deviceDataList == "") {
+		
+            $.ajax({
+                url: "ownershipUrl",
+                type: "GET",
+                async: false,
+                success: function (_data) {
+                    var domain = (RED.nodes.node($("#node-input-authentication").val()) != null ? RED.nodes.node($("#node-input-authentication").val()).domain : "");
+					if (domain != "") {
+                        _data.ownershipUrl = domain + "ownership-api/";
+                    }
+                    $.ajax({
+                        url: _data.ownershipUrl +
+                            "v1/list/?type=IOTID&accessToken=" +
+                            accessToken,
+                        type: "GET",
+                        async: true,
+                        dataType: "json",
+                        success: function (_data) {
+                            createDeviceDataSelection(_data);
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    });
+                }
+            });
+        }
+
+		}
+	var refreshDeviceDataSelectionGroup = function (accessToken, groupDataList) {
+		if (groupDataList != "") {
+            createGroupDataSelection(groupDataList);
+			
+        } else if (accessToken != "" && groupDataList == "") {
+            $.ajax({
+                url: "myPersonalDataUrl",
+                type: "GET",
+                async: false,
+                success: function (_data) {
+                    var domain = (RED.nodes.node($("#node-input-authentication").val()) != null ? RED.nodes.node($("#node-input-authentication").val()).domain : "");
+					if (domain != "") {
+                        _data.myPersonalDataUrl = domain + "/datamanager/api/v1/";
+                    }
+					$.ajax({
+                        url: _data.myPersonalDataUrl +
+                            "devicegroup/?sourceRequest=iotapp&accessToken=" +
+                            accessToken,
+                        type: "GET",
+                        async: true,
+                        dataType: "json",
+                        success: function (_data) {
+                            createGroupDataSelection(_data);
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    });
+                }
+            });
+        }
+		
+		
+		
+
+    }
+
+    var createDeviceDataSelection = function (currentDeviceDataList) {
+        $("#node-input-deviceDataList").val(JSON.stringify(currentDeviceDataList));
+        
+        currentDeviceDataList.sort(function (a, b) {
+            if (a.elementName < b.elementName) { return -1; }
+            if (a.elementName > b.elementName) { return 1; }
+            return 0;
+        });
+        if (currentDeviceDataList.length != 0) {
+            $("#node-input-deviceId").empty();
+            var currentValue = $("#node-input-selectedDeviceDataId").val();
+
+            for (var i = 0; i < currentDeviceDataList.length; i++) {
+                $("<option value='" + currentDeviceDataList[i].elementId + "'>" + currentDeviceDataList[i].elementName + "</option>").appendTo($("#node-input-deviceId"));
+            }
+            $("#node-input-deviceId").val(currentValue);
+        }
+    }
+	
+	var createGroupDataSelection = function (currentGroupDataList) {
+        $("#node-input-groupDataList").val(JSON.stringify(currentGroupDataList));
+
+        if (currentGroupDataList.length != 0) {
+            $("#node-input-groupId").empty();
+            var currentValue = $("#node-input-selectedGroupDataId").val();
+
+            for (var i = 0; i < currentGroupDataList.length; i++) {
+                $("<option value='" + currentGroupDataList[i].id + "'>" + currentGroupDataList[i].name + "</option>").appendTo($("#node-input-groupId"));
+            }
+            $("#node-input-groupId").val(currentValue);
+        }
+    }
+</script>
+
+<script type="text/x-red" data-template-name="group-insert-entity">
+    <input type="hidden" id="node-input-name">
+    <input type="hidden" id="node-input-currentNodeId">
+    <input type="hidden" id="node-input-selectedDeviceDataId">
+    <input type="hidden" id="node-input-deviceDataList">
+	<input type="hidden" id="node-input-selectedGroupDataId">
+    <input type="hidden" id="node-input-groupDataList">
+    <div class="form-row" id="rowAuthentication">
+        <label for="node-input-authentication">Authentication</label>
+        <input type="text" id="node-input-authentication">
+    </div>
+    <div class="form-row" id="selectDeviceDataContainer">
+        <label for="node-input-deviceId">
+            <i class="fa fa-dashboard"></i>Select Device</label>
+        <select id="node-input-deviceId" style="width: 55%;">
+        </select>
+    </div>
+	
+    <div class="form-row" id="selectGroupContainer">
+        <label for="node-input-groupId">
+            <i class="fa fa-dashboard"></i>Select Group</label>
+        <select id="node-input-groupId" style="width: 55%;">
+        </select>
+    </div>
+		
+	
+    <div class="form-tips"  id="tipAuthentication" style="max-width: none">
+		You must have an account with Snap4city to use this node. You can register for one <a href="https://www.snap4city.org" target="_blank">here</a>.
+    </div>
+    <div class="form-tips" id="tipAuthenticationWrong" style="display:none; max-width: none">
+        Maybe the authentication data are wrong. Check them and redeploy the node.
+    </div>
+    <div class="form-tips"  id="tipAuthenticationRedeploy" style="display:none; max-width: none">
+        Deploy the node to retrieve the updated list of dashboards.
+    </div>
+    <div class="form-tips"  id="tipAuthenticationDeployFirstTime" style="display:none; max-width: none">
+        Insert the authentication data and deploy the node to retrieve the updated list of dashboards.
+	</div>
+</script>
+
+<script type="text/x-red" data-help-name="group-insert-entity">
+    <p>It allows inserting an entity into a group</p>
+
+    <h3>Inputs</h3>
+    A JSON with these parameters:
+
+    <dl class="message-properties">
+        <dt>groupId
+            <span class="property-type">number</span>
+        </dt>
+        <dd> the nome id of the group</dd>
+		<dt>deviceId
+            <span class="property-type">array</span>
+        </dt>
+        <dd> an array containing the elementNames of the entity to be inserted </dd>
+    </dl>
+
+    <p>An example of the JSON array filled with correct data for user delegation:</p>
+    <pre>
+{
+"groupId": "idGroup",
+"deviceId": ["elementName1","elementName2"]
+}
+    </pre>
+
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dd> Returns an object containing the inserted entity </dd>
+    </dl>
+
+    <h3>Details</h3>
+    <p>The node can receive a JSON with the parameters described in the Inputs section and with them generate the output JSON.
+        If the values are not present in the input JSON, these are read by those in the configuration. If they are not present
+        in either part, an error is generated for the necessary parameters.</p>
+
+</script>

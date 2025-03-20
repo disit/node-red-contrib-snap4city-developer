@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-snap4city-developer",
-    "version": "0.5.16",
+    "version": "0.5.18",
     "dependencies": {
         "atob": "^2.1.2",
         "express": "^4.17.1",
@@ -73,6 +73,11 @@
             "get-paused-trigger-groups": "get-paused-trigger-groups.js",
             "get-job-fire-times": "get-job-fire-times.js",
             "get-system-status": "get-system-status.js",
+	    "group-list-entity":"group-list-entity.js",
+	    "group-add-entity":"group-add-entity.js",
+	    "group-remove-entity":"group-remove-entity.js",
+	    "group-add-user":"group-add-user.js",
+	    "group-delete-user":"group-delete-user.js",
             "trigger-job": "trigger-job.js",
             "pause-all": "pause-all.js",
             "pause-job": "pause-job.js",
