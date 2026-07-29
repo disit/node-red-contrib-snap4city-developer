@@ -67,14 +67,14 @@ module.exports = function (RED) {
                             if (xmlHttp.status == 502) {
                                 node.error("Something went wrong. Check the correctness of the Python script.");
                             } else {
-                                node.error(xmlHttp.responseText);
+                                node.error(xmlHttp.responseText, msg);
                             }
                         }
                     }
                 };
                 xmlHttp.onerror = function (e) {
                     logger.error(xmlHttp.statusText);
-                    node.error(xmlHttp.responseText);
+                    node.error(xmlHttp.responseText, msg);
                 };
                 xmlHttp.send(null);
             } else {

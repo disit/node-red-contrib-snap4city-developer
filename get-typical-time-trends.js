@@ -85,13 +85,13 @@ module.exports = function (RED) {
                                 node.error("Unauthorized");
                             } else {
                                 console.error(xmlHttp.statusText);
-                                node.error(xmlHttp.responseText);
+                                node.error(xmlHttp.responseText, msg);
                             }
                         }
                     };
                     xmlHttp.onerror = function (e) {
                         console.error(xmlHttp.statusText);
-                        node.error(xmlHttp.responseText);
+                        node.error(xmlHttp.responseText, msg);
                     };
 
 

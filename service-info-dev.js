@@ -24,22 +24,32 @@ module.exports = function (RED) {
             node.s4cAuth = RED.nodes.getNode(config.authentication);
             var uri = s4cUtility.settingUrl(RED,node, "ascapiUrl", "https://www.snap4city.org", "/superservicemap/api/v1/");
             var serviceuri = (msg.payload.serviceuri ? msg.payload.serviceuri : config.serviceuri);
-            if (typeof serviceuri == "undefined" || (typeof serviceuri != "undefined" && serviceuri == "" && msg.payload.indexOf("://") != -1)) {
+            if (typeof serviceuri == "undefined" || (typeof serviceuri != "undefined" && serviceuri == "" && typeof msg.payload == "string" && msg.payload.indexOf("://") != -1)) {
                 serviceuri = msg.payload;
             }
             var lang = (msg.payload.lang ? msg.payload.lang : config.lang);
             var fromtime = (msg.payload.fromtime ? msg.payload.fromtime : config.fromtime);
             var valueName = (msg.payload.valuename ? msg.payload.valuename : config.valuename);
             var totime = (msg.payload.totime ? msg.payload.totime : config.totime);
+            var filter = (msg.payload.filter ? msg.payload.filter : config.filter);
+            var sortOnValue = (msg.payload.sortOnValue ? msg.payload.sortOnValue : config.sortOnValue);
+            var values = (msg.payload.values ? msg.payload.values : config.values);
+            var maxResults = (msg.payload.maxresults ? msg.payload.maxresults : config.maxresults);
+            var typeQuery = (msg.payload.typeQuery ? msg.payload.typeQuery : config.typeQuery);
             const uid = s4cUtility.retrieveAppID(RED);
             var inPayload = msg.payload;
             var accessToken = "";
             accessToken = s4cUtility.retrieveAccessToken(RED, node, config.authentication, uid);
             var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xmlHttp = new XMLHttpRequest();
-            logger.info(encodeURI(uri + "/?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (valueName ? "&valueName=" + valueName : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"));
             if (typeof serviceuri != "undefined" && serviceuri != "") {
-                xmlHttp.open("GET", encodeURI(uri + "/?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (valueName ? "&valueName=" + valueName : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "") + "&appID=iotapp"), true); // false for synchronous request
+                var requestUri = uri + (typeQuery == "entity" ? "iot-search/time-range/" : "/") + "?serviceUri=" + serviceuri + "&realtime=true" + "&lang=" + lang + (fromtime ? "&fromTime=" + fromtime : "") + (valueName ? "&valueName=" + valueName : "") + (totime ? "&toTime=" + totime : "") + (typeof uid != "undefined" && uid != "" ? "&uid=" + uid : "");
+                if (typeQuery == "entity") {
+                    requestUri += "&valueFilters=" + filter + "&maxResults=" + maxResults + (typeof sortOnValue != "undefined" && sortOnValue != "" ? "&sortOnValue=" + sortOnValue : "") + (typeof values != "undefined" && values != "" ? "&values=" + values : "");
+                }
+                requestUri += "&appID=iotapp";
+                logger.info(encodeURI(requestUri));
+                xmlHttp.open("GET", encodeURI(requestUri), true); // false for synchronous request
                 if (typeof accessToken != "undefined" && accessToken != "") {
                     xmlHttp.setRequestHeader('Authorization', 'Bearer ' + accessToken);
                 }
@@ -61,13 +71,13 @@ module.exports = function (RED) {
                             node.send(msg);
                         } else {
                             logger.error(xmlHttp.statusText);
-                            node.error(xmlHttp.responseText);
+                            node.error(xmlHttp.responseText, msg);
                         }
                     }
                 };
                 xmlHttp.onerror = function (e) {
                     logger.error(xmlHttp.statusText);
-                    node.error(xmlHttp.responseText);
+                    node.error(xmlHttp.responseText, msg);
                 };
                 xmlHttp.send(null);
             } else {
